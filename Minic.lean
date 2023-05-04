@@ -1,3 +1,5 @@
+import Minic.Parser
+
 structure Config where
   sourceFile : System.FilePath
 
