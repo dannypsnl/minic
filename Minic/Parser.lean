@@ -6,7 +6,17 @@ open Lean
 open Lean.Parsec
 open Parsec.ParseResult
 
-inductive MOp | add | sub | mul | div deriving Repr
+inductive MOp | add | sub | mul | div
+deriving Repr, BEq, Inhabited
+
+instance : Coe Char (Option MOp) where
+  coe c :=
+  match c with
+  | '+' => .some .add
+  | '-' => .some .sub
+  | '*' => .some .mul
+  | '/' => .some .div
+  | _ => .none
 
 inductive MExpr
   | ident (x : String)
@@ -37,23 +47,17 @@ def mterm : Parsec MExpr :=
   <* ws
 
 mutual
-  partial def madd : Parsec MExpr := do
-    let l ← mterm
-    let opC ← peek!
-    let mut op : MOp := .add
-    match opC with
-      | '+' => op := .add
-      | '-' => op := .sub
-      | '*' => op := .mul
-      | '/' => op := .div
-      | _ => return l
-    anyChar *> ws
-    let r ← mexpr
-    return .bin op l r
+  partial def mbinary (opList : List Char) (pl : Parsec MExpr) : Parsec MExpr := do
+    let l ← pl
+    let loop := do
+      let op : Option MOp ← satisfy (opList.contains ·)
+      ws
+      return (op.get!, ← pl)
+    let es ← many loop
+    return es.toList.foldl (fun lhs e => (.bin e.1 lhs e.2)) l
 
   partial def mexpr : Parsec MExpr :=
-    (madd <|> mterm)
-    <* ws
+    (mbinary ['+', '-'] (mbinary ['*', '/'] mterm)) <* ws
 end
 
 def letBinding : Parsec MDef := do
