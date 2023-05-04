@@ -47,7 +47,7 @@ def mterm : Parsec MExpr :=
   <* ws
 
 mutual
-  partial def mbinary (opList : List Char) (pl : Parsec MExpr) : Parsec MExpr := do
+  def mbinary (opList : List Char) (pl : Parsec MExpr) : Parsec MExpr := do
     let l ← pl
     let loop := do
       let op : Option MOp ← satisfy (opList.contains ·)
@@ -56,7 +56,7 @@ mutual
     let es ← many loop
     return es.toList.foldl (fun lhs e => (.bin e.1 lhs e.2)) l
 
-  partial def mexpr : Parsec MExpr :=
+  def mexpr : Parsec MExpr :=
     (mbinary ['+', '-'] (mbinary ['*', '/'] mterm)) <* ws
 end
 
