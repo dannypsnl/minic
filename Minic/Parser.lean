@@ -19,17 +19,14 @@ instance : Coe Char (Option MOp) where
   | _ => .none
 
 inductive MExpr
-  | ident (x : String)
+  | symbol (x : String)
   | fixnum (v : Int)
   | bin (op : MOp) (a b : MExpr)
-deriving Repr
-
-inductive MDef
-  | let' (x : String) (e : MExpr)
+  | let' (x : String) (e : MExpr) (body : MExpr)
 deriving Repr
 
 structure MFileAst where
-  definitions : List MDef
+  expr : MExpr
 deriving Repr
 
 def keyword (s : String) := do skipString s; ws
@@ -41,37 +38,35 @@ def identifier : Parsec String := many1Chars <| satisfy isValid
 def fixnum : Parsec Int := do
   return (← many1Chars <| satisfy (λ c => c.isDigit)).toInt!
 
-def mterm : Parsec MExpr :=
-  (.ident <$> identifier
-   <|> .fixnum <$> fixnum)
-  <* ws
-
 mutual
-  def mbinary (opList : List Char) (pl : Parsec MExpr) : Parsec MExpr := do
-    let l ← pl
+  partial def letBinding : Parsec MExpr := do
+    keyword "let"
+    let x ← identifier; ws
+    keyword ":="
+    let e ← mexpr
+    keyword ";"
+    let b ← mexpr
+    return .let' x e b
+
+  partial def mterm : Parsec MExpr :=
+    (letBinding
+     <|> .symbol <$> identifier
+     <|> .fixnum <$> fixnum)
+    <* ws
+
+  partial def mbinary (opList : List Char) (expr : Parsec MExpr) : Parsec MExpr := do
+    let l ← expr
     let loop := do
       let op : Option MOp ← satisfy (opList.contains ·)
       ws
-      return (op.get!, ← pl)
+      return (op.get!, ← expr)
     let es ← many loop
     return es.toList.foldl (fun lhs e => (.bin e.1 lhs e.2)) l
 
-  def mexpr : Parsec MExpr :=
+  partial def mexpr : Parsec MExpr :=
     (mbinary ['+', '-'] (mbinary ['*', '/'] mterm)) <* ws
 end
 
-def letBinding : Parsec MDef := do
-  guard (← peek?).isSome
-  keyword "let"
-  let x ← identifier; ws
-  keyword ":="
-  let e ← mexpr
-  keyword ";"
-  return .let' x e
-
 def fileParser : Parsec MFileAst := do
-  let mut defs := []
-  while (← peek?).isSome do
-    defs := (← letBinding) :: defs
-  eof
-  return { definitions := defs.reverse }
+  let e ← mexpr; eof
+  return { expr := e }
