@@ -1,4 +1,5 @@
 import Minic.Parser
+import Minic.Passes
 
 structure Config where
   sourceFile : System.FilePath

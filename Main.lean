@@ -2,7 +2,7 @@ import «Minic»
 
 def start (cfg : Config) : ExceptT String IO Unit := do
   let content ← IO.FS.readFile cfg.sourceFile
-  let result ← fileParser.run content
+  let result := Minic.Passes.all <| ← fileParser.run content
   IO.println s!"result: {result |> reprStr}"
 
 def main (args : List String) : IO Unit := do

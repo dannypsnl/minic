@@ -1,33 +1,11 @@
 import Lean.Data.Parsec
+import Minic.Ast
 open IO
 open System
 open Lean
-
 open Lean.Parsec
 open Parsec.ParseResult
-
-inductive MOp | add | sub | mul | div
-deriving Repr, BEq, Inhabited
-
-instance : Coe Char (Option MOp) where
-  coe c :=
-  match c with
-  | '+' => .some .add
-  | '-' => .some .sub
-  | '*' => .some .mul
-  | '/' => .some .div
-  | _ => .none
-
-inductive MExpr
-  | symbol (x : String)
-  | fixnum (v : Int)
-  | bin (op : MOp) (a b : MExpr)
-  | let' (x : String) (e : MExpr) (body : MExpr)
-deriving Repr
-
-structure MFileAst where
-  expr : MExpr
-deriving Repr
+open Minic.Ast
 
 def keyword (s : String) := do skipString s; ws
 def identifier : Parsec String := many1Chars <| satisfy isValid
@@ -50,8 +28,8 @@ mutual
 
   partial def mterm : Parsec MExpr :=
     (letBinding
-     <|> .symbol <$> identifier
-     <|> .fixnum <$> fixnum)
+     <|> .fixnum <$> fixnum
+     <|> .symbol <$> identifier)
     <* ws
 
   partial def mbinary (opList : List Char) (expr : Parsec MExpr) : Parsec MExpr := do
@@ -67,6 +45,6 @@ mutual
     (mbinary ['+', '-'] (mbinary ['*', '/'] mterm)) <* ws
 end
 
-def fileParser : Parsec MFileAst := do
+def fileParser : Parsec MProg := do
   let e ← mexpr; eof
   return { expr := e }
