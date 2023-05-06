@@ -17,10 +17,10 @@ inductive MExpr
   | fixnum (v : Int)
   | bin (op : MOp) (a b : MExpr)
   | let' (x : String) (e : MExpr) (body : MExpr)
-deriving Repr
+deriving Repr, BEq, Inhabited
 
 structure MProg where
   expr : MExpr
-deriving Repr
+deriving Repr, BEq
 
 end Minic.Ast

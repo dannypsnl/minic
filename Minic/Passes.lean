@@ -1,10 +1,11 @@
-import Minic.Passes.Uniquify
 import Minic.Ast
+import Minic.Passes.Uniquify
+import Minic.Passes.RemoveComplex
 
 namespace Minic.Passes
 open Minic.Ast
 
 def all (m : MProg) : MProg :=
-  Uniquify.pass m
+  m |> Uniquify.pass |> RemoveComplex.pass
 
 end Minic.Passes
