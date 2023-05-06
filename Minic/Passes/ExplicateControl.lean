@@ -5,6 +5,7 @@ import Minic.IR.Asm
 namespace Minic.Passes
 open Minic.IR.Asm
 
+-- A tail with a list of variables in the block
 structure TailBlock where
   varSet : List String
   tail : Tail
@@ -34,7 +35,6 @@ mutual
     | e => ⟨[], .ret e⟩
 end
 
--- A tail with a list of variables in the block
 def pass (p : MProg) : AsmProg TailBlock :=
   { arch := .arm64, blocks := HashMap.ofList [("start", explicateTail p.expr)] }
 
