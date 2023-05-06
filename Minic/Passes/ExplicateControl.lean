@@ -10,7 +10,7 @@ structure TailBlock where
   varSet : List String
   tail : Tail
 instance : ToString TailBlock where
-  toString b := s!"{toString b.tail}\n\n  @variable set = {b.varSet}"
+  toString b := s!"@variable set = {b.varSet}\n{toString b.tail}"
 
 end Minic.Passes
 
