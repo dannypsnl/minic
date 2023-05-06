@@ -1,9 +1,11 @@
 import «Minic»
+import Minic.IR.Asm
+open Minic.IR.Asm
 
 def start (cfg : Config) : ExceptT String IO Unit := do
   let content ← IO.FS.readFile cfg.sourceFile
   let result := Minic.Passes.all <| ← fileParser.run content
-  IO.println s!"result: {result |> reprStr}"
+  IO.println <| toString result
 
 def main (args : List String) : IO Unit := do
   match commandOpt args with

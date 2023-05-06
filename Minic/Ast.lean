@@ -19,6 +19,18 @@ inductive MExpr
   | let' (x : String) (e : MExpr) (body : MExpr)
 deriving Repr, BEq, Inhabited
 
+private def expToString : MExpr → String
+  | .let' x e b => s!"let {x} := {expToString e}; {expToString b}"
+  | .fixnum x => toString x
+  | .symbol x => x
+  | .bin op a b => match op with
+    | .add => s!"{expToString a} + {expToString b}"
+    | .sub => s!"{expToString a} - {expToString b}"
+    | .mul => s!"{expToString a} * {expToString b}"
+    | .div => s!"{expToString a} / {expToString b}"
+instance : ToString MExpr where
+  toString := expToString
+
 structure MProg where
   expr : MExpr
 deriving Repr, BEq
