@@ -12,7 +12,7 @@ structure InstrBlock (instr : Type) where
 instance [ToString instr] : ToString (InstrBlock instr) where
   toString b :=
     b.instructions.foldl
-      (fun result instr => s!"{result}  {toString instr}\n")
+      (fun result instr => s!"{result}\t{toString instr}\n")
       ""
 
 end Minic.Passes
