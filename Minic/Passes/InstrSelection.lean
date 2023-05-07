@@ -6,8 +6,7 @@ import Minic.Passes.ExplicateControl
 
 namespace Minic.Passes
 
-structure InstrBlock (instr : Type) where
-  varSet : List String
+structure InstrBlock (instr : Type) extends TailBlock where
   instructions : List instr
 instance [ToString instr] : ToString (InstrBlock instr) where
   toString b :=
@@ -72,7 +71,7 @@ def selectTail (t : Tail) : Except String (List Arm64Instr) := do
 
 def selectOnBlock (block : TailBlock) : Except String (InstrBlock Arm64Instr) := do
   let instrs ← selectTail block.tail 
-  return { varSet := block.varSet, instructions := instrs }
+  return { block with instructions := instrs }
 
 def pass (p : AsmProg TailBlock) : Except String (AsmProg (InstrBlock Arm64Instr)) :=
   return {
