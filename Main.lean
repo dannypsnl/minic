@@ -4,8 +4,11 @@ open Minic.IR.Asm
 
 def start (cfg : Config) : ExceptT String IO Unit := do
   let content ← IO.FS.readFile cfg.sourceFile
-  let result := Minic.Passes.all <| ← fileParser.run content
-  IO.println <| toString result
+  match Minic.Passes.all <| ← fileParser.run content with
+  | .ok result =>
+    IO.println <| toString result
+  | .error err =>
+    IO.eprintln s!"failed {err}"
 
 def main (args : List String) : IO Unit := do
   match commandOpt args with
