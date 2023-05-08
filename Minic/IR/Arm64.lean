@@ -10,6 +10,7 @@ def atom? : MExpr → Bool
 inductive Reg
   | reg (name : String)
   | var (name : String)
+deriving Repr
 instance : Coe String Reg where
   coe name := .var name
 instance : ToString Reg where
