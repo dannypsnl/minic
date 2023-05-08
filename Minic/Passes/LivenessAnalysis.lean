@@ -1,5 +1,5 @@
 import Lean.Data.HashMap
-import Mathlib.Data.Set.Basic
+import Mathlib.Data.Set.Finite
 import Minic.Ast
 import Minic.IR.Asm
 import Minic.IR.Arm64
@@ -15,20 +15,20 @@ def Arm64Instr.writeSet : Arm64Instr → LiveSet
   | .subi d .. => Set.singleton d
   | .smul d .. => Set.singleton d
   | .sdiv d .. => Set.singleton d
-  | .ret => {}
+  | .ret => ∅
 
 def Src.liveSet : Src → LiveSet
   | Src.sreg r => Set.singleton r
-  | _ => {}
+  | _ => ∅
 def convert (srcs : List Src) : LiveSet :=
-  srcs.foldl (fun set src => set ∪ src.liveSet) {}
+  srcs.foldl (fun set src => set ∪ src.liveSet) ∅
 def Arm64Instr.readSet : Arm64Instr → LiveSet
   | .mov _ s => convert [s]
   | .addi _ s1 s2 => convert [s1, s2]
   | .subi _ s1 s2 => convert [s1, s2]
   | .smul _ s1 s2 => convert [s1, s2]
   | .sdiv _ s1 s2 => convert [s1, s2]
-  | .ret => {}
+  | .ret => ∅
 
 end Minic.IR.Arm64
 
@@ -59,7 +59,7 @@ def liveBefore (liveAfter_k : LiveSet) (k : Arm64Instr) : LiveSet :=
 def livenessAnalysis (instrs : List Arm64Instr) : StateM (Array LiveSet) Unit := do
   for k in instrs do
     let livesets ← get
-    let liveBefore_k := liveBefore (livesets.getD 0 {}) k
+    let liveBefore_k := liveBefore (livesets.getD 0 ∅) k
     set <| livesets.push liveBefore_k
 
 def livenessOnBlock (block : InstrBlock Arm64Instr) : Instr2Block Arm64Instr :=
