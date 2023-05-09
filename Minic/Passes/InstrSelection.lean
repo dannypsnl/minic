@@ -55,7 +55,7 @@ def selectStmt (s : Stmt) : Except String (List Arm64Instr) := do
   match s with
   | .assign x s@(.bin .add b (.symbol x')) | .assign x s@(.bin .add (.symbol x') b) =>
     if x == x' then
-      return [.addi x (Reg.reg x) (← selectAtom b)]
+      return [.addi x (Reg.var x) (← selectAtom b)]
     else selectAssign x s
   | .assign x e => selectAssign x e
 
@@ -64,9 +64,9 @@ def selectTail (t : Tail) : Except String (List Arm64Instr) := do
   | .seq s t => return (← selectStmt s) ++ (← selectTail t)
   | .ret e =>
     if atom? e then
-      return [.mov (Reg.reg "x0") (← selectAtom e), .ret]
+      return [.mov (Reg.x0) (← selectAtom e), .ret]
     else
-      let r ← selectAssign (Reg.reg "x0") (e)
+      let r ← selectAssign (Reg.x0) (e)
       return r ++ [.ret]
 
 def selectOnBlock (block : TailBlock) : Except String (InstrBlock Arm64Instr) := do

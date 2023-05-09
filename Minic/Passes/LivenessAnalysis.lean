@@ -7,6 +7,7 @@ import Minic.Passes.InstrSelection
 
 namespace Minic.IR.Arm64
 
+-- consider HashSet
 abbrev LiveSet := Set Reg
 
 def Arm64Instr.writeSet : Arm64Instr → LiveSet
