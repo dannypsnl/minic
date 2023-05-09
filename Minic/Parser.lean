@@ -24,7 +24,7 @@ mutual
     let e ← mexpr
     keyword ";"
     let b ← mexpr
-    return .let' x e b
+    return .«let» x e b
 
   partial def mterm : Parsec MExpr :=
     (letBinding

@@ -18,11 +18,11 @@ mutual
 
   partial def rcoExp (e : MExpr) : StateM Nat MExpr := do
     match e with
-    | .let' x e body => return .let' x (← rcoExp e) (← rcoExp body)
+    | .«let» x e body => return .«let» x (← rcoExp e) (← rcoExp body)
     | .bin op a b =>
       let ⟨a, aBinds⟩ ← rcoAtom a
       let ⟨b, bBinds⟩ ← rcoAtom b
-      let bindIntro body x v := .let' x v body
+      let bindIntro body x v := .«let» x v body
       return bBinds.fold bindIntro <| aBinds.fold bindIntro (.bin op a b)
     | e => pure e
 end

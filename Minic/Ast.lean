@@ -16,11 +16,11 @@ inductive MExpr
   | symbol (x : String)
   | fixnum (v : Int)
   | bin (op : MOp) (a b : MExpr)
-  | let' (x : String) (e : MExpr) (body : MExpr)
+  | «let» (x : String) (e : MExpr) (body : MExpr)
 deriving Repr, BEq, Inhabited
 
 private def expToString : MExpr → String
-  | .let' x e b => s!"let {x} := {expToString e}; {expToString b}"
+  | .«let» x e b => s!"let {x} := {expToString e}; {expToString b}"
   | .fixnum x => toString x
   | .symbol x => x
   | .bin op a b => match op with
