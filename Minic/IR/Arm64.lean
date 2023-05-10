@@ -15,7 +15,7 @@ inductive Reg
   | x24 | x25 | x26 | x27 | x28 | x29
   | x30
   | var (name : String)
-deriving Repr
+deriving Repr, BEq, Hashable
 instance : Coe String Reg where
   coe name := .var name
 instance : ToString Reg where
