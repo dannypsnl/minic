@@ -1,4 +1,3 @@
-import Minic.Ast
 import Minic.Passes.Uniquify
 import Minic.Passes.RemoveComplex
 import Minic.Passes.ExplicateControl

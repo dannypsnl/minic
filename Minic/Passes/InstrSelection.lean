@@ -1,7 +1,3 @@
-import Lean.Data.HashMap
-import Minic.Ast
-import Minic.IR.Asm
-import Minic.IR.Arm64
 import Minic.Passes.ExplicateControl
 
 namespace Minic.Passes
