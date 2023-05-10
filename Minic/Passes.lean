@@ -9,7 +9,7 @@ open Minic.Ast
 open Minic.IR.Asm
 open Minic.IR.Arm64
 
-def all (m : MProg) : Except String (AsmProg (Instr2Block Arm64Instr)) := do
+def all (m : MProg) := do
   let r ←
     m |> Uniquify.pass
       |> RemoveComplex.pass
