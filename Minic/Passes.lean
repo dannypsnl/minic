@@ -3,6 +3,7 @@ import Minic.Passes.RemoveComplex
 import Minic.Passes.ExplicateControl
 import Minic.Passes.InstrSelection
 import Minic.Passes.LivenessAnalysis
+import Minic.Passes.InferGraph
 
 namespace Minic.Passes
 open Minic.Ast
@@ -15,6 +16,8 @@ def all (m : MProg) := do
       |> RemoveComplex.pass
       |> ExplicateControl.pass
       |> InstrSelection.pass
-  return r |> LivenessAnalysis.pass
+  r |> LivenessAnalysis.pass
+    |> InferGraph.pass
+    |> (λ x => return x)
 
 end Minic.Passes

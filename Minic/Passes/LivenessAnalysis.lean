@@ -39,8 +39,7 @@ def livenessOnBlock (name : String) (block : InstrBlock Arm64Instr)
     livenessSets := liveSets
   }
 
-def pass (p : AsmProg (InstrBlock Arm64Instr))
-  : Id (AsmProg (Instr2Block Arm64Instr)) := do
+def pass (p : AsmProg (InstrBlock Arm64Instr)) : Id (AsmProg (Instr2Block Arm64Instr)) := do
   let mut blocksLiveSet : HashMap String LiveSet := HashMap.empty
   let mut blocks' : List (String × Instr2Block Arm64Instr) := []
   for (name, block) in p.blocks do
