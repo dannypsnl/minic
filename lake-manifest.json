@@ -2,6 +2,12 @@
  "packagesDir": "lake-packages",
  "packages":
  [{"git":
+   {"url": "https://github.com/PeterKementzey/graph-library-for-lean4",
+    "subDir?": null,
+    "rev": "414cdbe1603340a54133edf9b07985f94ceeb26a",
+    "name": "graph",
+    "inputRev?": null}},
+  {"git":
    {"url": "https://github.com/leanprover/std4.git",
     "subDir?": null,
     "rev": "fe45c329180f4d051f9f19d1a360d9e195532afb",
