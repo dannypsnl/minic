@@ -7,6 +7,13 @@ open Lean.Parsec
 open Parsec.ParseResult
 open Minic.Ast
 
+namespace Lean.Parsec
+
+def getSourcePos : Parsec String.Pos := fun it : String.Iterator =>
+  success it it.pos
+
+end Lean.Parsec
+
 def keyword (s : String) := do skipString s; ws
 def identifier : Parsec String := many1Chars <| satisfy isValid
   where
