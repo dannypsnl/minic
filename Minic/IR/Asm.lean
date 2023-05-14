@@ -1,8 +1,9 @@
-import Lean.Data.HashMap
+import Std.Data.HashMap.Basic
+import Std.Classes.SetNotation
+import Std.Lean.HashSet
 import Lean.Data.HashSet
 import Minic.Ast
 import Minic.IR.Arm64
-import Mathlib.Data.Set.Finite
 
 namespace Lean
 open Lean
@@ -21,7 +22,7 @@ end Lean
 
 namespace Minic.IR.Arm64
 open Lean
-open Lean.HashMap
+open Std.HashMap
 
 abbrev LiveSet := HashSet Reg
 instance : ToString LiveSet where
@@ -52,8 +53,8 @@ def Arm64Instr.readSet : Arm64Instr → LiveSet
 end Minic.IR.Arm64
 
 namespace Minic.IR.Asm
-open Lean
-open Lean.HashMap
+open Std
+open Std.HashMap
 open Lean.HashSet
 open Minic.Ast
 open Minic.IR.Arm64

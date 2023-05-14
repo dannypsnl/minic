@@ -16,7 +16,8 @@ instance [ToString instr] : ToString (Instr2Block instr) where
 end Minic.Passes
 
 namespace Minic.Passes.LivenessAnalysis
-open Lean
+open Std
+open Std.HashMap
 open Minic.Ast
 open Minic.IR.Asm
 open Minic.IR.Arm64
@@ -42,7 +43,7 @@ def livenessOnBlock (name : String) (block : InstrBlock Arm64Instr)
 def pass (p : AsmProg (InstrBlock Arm64Instr)) : Id (AsmProg (Instr2Block Arm64Instr)) := do
   let mut blocksLiveSet : HashMap String LiveSet := HashMap.empty
   let mut blocks' : List (String × Instr2Block Arm64Instr) := []
-  for (name, block) in p.blocks do
+  for (name, block) in p.blocks.toArray do
     let (block', curBlkLiveSet) ← (livenessOnBlock name block).run HashMap.empty
     blocks' := (name, block') :: blocks'
     blocksLiveSet := blocksLiveSet.mergeWith (fun _ _ b₂ => b₂) curBlkLiveSet

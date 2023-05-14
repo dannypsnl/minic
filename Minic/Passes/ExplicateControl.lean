@@ -1,4 +1,4 @@
-import Lean.Data.HashMap
+import Std.Data.HashMap.Basic
 import Minic.Ast
 import Minic.IR.Asm
 
@@ -15,7 +15,7 @@ instance : ToString TailBlock where
 end Minic.Passes
 
 namespace Minic.Passes.ExplicateControl
-open Lean
+open Std
 open Minic.Ast
 open Minic.IR.Asm
 

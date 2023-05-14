@@ -13,7 +13,7 @@ instance [ToString instr] : ToString (InstrBlock instr) where
 end Minic.Passes
 
 namespace Minic.Passes.InstrSelection
-open Lean
+open Std
 open Minic.Ast
 open Minic.IR.Asm
 open Minic.IR.Arm64

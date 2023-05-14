@@ -13,7 +13,7 @@ instance [ToString instr] : ToString (Instr3Block instr) where
 end Minic.Passes
 
 namespace Minic.Passes.InferGraph
-open Lean
+open Std
 open Minic.Ast
 open Minic.IR.Asm
 open Minic.IR.Arm64
@@ -36,7 +36,7 @@ def inferGraphBlock (block : Instr2Block Arm64Instr) : Instr3Block Arm64Instr :=
 
 def pass (p : AsmProg $ Instr2Block Arm64Instr) : AsmProg $ Instr3Block Arm64Instr := Id.run do
   let mut blocks' : List (String × Instr3Block Arm64Instr) := []
-  for (name, block) in p.blocks do
+  for (name, block) in p.blocks.toArray do
     blocks' := (name, inferGraphBlock block) :: blocks'
   return { p with blocks := blocks' |> HashMap.ofList }
 
