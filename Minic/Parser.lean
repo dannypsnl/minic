@@ -52,18 +52,18 @@ mutual
      <|> .symbol <$> identifier)
     <* ws
 
-  partial def binary (opList : List $ Parsec (MExpr → MExpr → MExpr)) (tm : Parsec MExpr)
-    : Parsec MExpr := do
+  partial def binary [Inhabited (α → α → α)] (opList : List $ Parsec (α → α → α)) (tm : Parsec α)
+    : Parsec α := do
     let l ← tm
     let es ← many opRhs
     return es.toList.foldl (fun lhs e => (e.1 lhs e.2)) l
     where
-      opRhs : Parsec $ (MExpr → MExpr → MExpr) × MExpr := do
+      opRhs : Parsec $ (α → α → α) × α := do
         let mut op := .none
         for findOp in opList do
           op ← tryP findOp
-          if op.isSome then break
-        return (op.get!, ← tm)
+          if op.isSome then return (op.get!, ← tm)
+        fail "no operator found"
   partial def mexpr : Parsec MExpr :=
     mterm
     |> binary [keyword "*" *> return .bin .mul, keyword "/" *> return .bin .div]
