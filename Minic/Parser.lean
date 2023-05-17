@@ -1,4 +1,5 @@
 import Lean.Data.Parsec
+import Lean.Data.Position
 import Minic.Ast
 open IO
 open System
@@ -11,6 +12,18 @@ namespace Lean.Parsec
 
 def getSourcePos : Parsec String.Pos := fun it : String.Iterator =>
   success it it.pos
+
+def tryP (p : Parsec a) : Parsec (Option a) := λ it =>
+  match p it with
+  | .success rem a => .success rem a
+  | .error _ _ => .success it .none
+
+def run' (p : Parsec α) (filepath : System.FilePath) (s : String) : Except String α :=
+  match p s.mkIterator with
+  | .success _ res => Except.ok res
+  | .error it err  =>
+    let f := it.s.toFileMap.toPosition it.pos
+    Except.error s!"{filepath}:{f}: {err}"
 
 end Lean.Parsec
 
@@ -39,17 +52,22 @@ mutual
      <|> .symbol <$> identifier)
     <* ws
 
-  partial def mbinary (opList : List Char) (expr : Parsec MExpr) : Parsec MExpr := do
-    let l ← expr
-    let loop := do
-      let op : Option MOp ← satisfy (opList.contains ·)
-      ws
-      return (op.get!, ← expr)
-    let es ← many loop
-    return es.toList.foldl (fun lhs e => (.bin e.1 lhs e.2)) l
-
+  partial def binary (opList : List $ Parsec (MExpr → MExpr → MExpr)) (tm : Parsec MExpr)
+    : Parsec MExpr := do
+    let l ← tm
+    let es ← many opRhs
+    return es.toList.foldl (fun lhs e => (e.1 lhs e.2)) l
+    where
+      opRhs : Parsec $ (MExpr → MExpr → MExpr) × MExpr := do
+        let mut op := .none
+        for findOp in opList do
+          op ← tryP findOp
+          if op.isSome then break
+        return (op.get!, ← tm)
   partial def mexpr : Parsec MExpr :=
-    (mbinary ['+', '-'] (mbinary ['*', '/'] mterm)) <* ws
+    mterm
+    |> binary [keyword "*" *> return .bin .mul, keyword "/" *> return .bin .div]
+    |> binary [keyword "+" *> return .bin .add, keyword "-" *> return .bin .sub]
 end
 
 def fileParser : Parsec MProg := do
