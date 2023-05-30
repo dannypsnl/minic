@@ -92,7 +92,7 @@ structure AsmProg (β : Type) where
 instance [ToString β] : ToString (AsmProg β) where
   toString p :=
     p.blocks.toList.foldl
-      (fun result (name, block) => result ++ s!".global {name}\n{name}:\n{toString block}")
+      (fun result (name, block) => result ++ s!".global {name}\n.balign 4\n{name}:\n{toString block}")
       ""
 
 end Minic.IR.Asm
