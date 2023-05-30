@@ -10,12 +10,14 @@ open Minic.Ast
 open Minic.IR.Asm
 open Minic.IR.Arm64
 
+def share (m : MProg) := do
+  m |> Uniquify.pass
+    |> RemoveComplex.pass
+    |> ExplicateControl.pass
+    |> InstrSelection.pass
+
 def all (m : MProg) := do
-  let r ←
-    m |> Uniquify.pass
-      |> RemoveComplex.pass
-      |> ExplicateControl.pass
-      |> InstrSelection.pass
+  let r ← share m
   r |> LivenessAnalysis.pass
     |> InferGraph.pass
     |> (λ x => return x)
