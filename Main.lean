@@ -19,11 +19,14 @@ def start (cfg : Config) : ExceptT String IO Unit := do
   | .ok r =>
     let r ← Minic.Passes.runnable <| r
     IO.FS.withFile "build/output.s" .write (writeAsm r)
-    let _ ← IO.Process.spawn { cmd := "clang", args := #["-c", "build/output.s", "-o", "build/output.o"] }
+    let compileAsm ← IO.Process.spawn { cmd := "clang", args := #["-c", "build/output.s", "-o", "build/output.o"] }
     IO.FS.withFile "build/main.c" .write writeMain
-    let _ ← IO.Process.spawn { cmd := "clang", args := #["-c", "build/main.c", "-o", "build/main.o"] }
-    let _ ← IO.Process.spawn { cmd := "clang", args := #["build/output.o", "build/main.o", "-o", "build/a.out"] }
+    let _ ← compileAsm.wait
+    let compileMain ← IO.Process.spawn { cmd := "clang", args := #["-c", "build/main.c", "-o", "build/main.o"] }
+    let _ ← compileMain.wait
+    let buildExe ← IO.Process.spawn { cmd := "clang", args := #["build/output.o", "build/main.o", "-o", "build/a.out"] }
     IO.println "compiled"
+    let _ ← buildExe.wait
   | .error err =>
     IO.eprintln s!"failed {err}"
 

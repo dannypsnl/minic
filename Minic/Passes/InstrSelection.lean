@@ -41,11 +41,14 @@ def selectAssign (dest : Reg) (e : MExpr) : Except String (List Arm64Instr) := d
   | .bin .mul a b =>
     return [
       .mov dest (← selectAtom a),
-      .smul dest dest (← selectAtom b)
+      .mov (.var "tmp1") (← selectAtom b),
+      .smul dest dest (.sreg (.var "tmp1"))
     ]
   | .bin .div a b =>
-    return [ .mov dest (← selectAtom a),
-      .sdiv dest dest (← selectAtom b)
+    return [
+      .mov dest (← selectAtom a),
+      .mov (.var "tmp") (← selectAtom b),
+      .sdiv dest dest (.sreg (.var "tmp"))
     ]
   | e => return  [.mov dest (← selectAtom e)]
 
@@ -69,7 +72,10 @@ def selectTail (t : Tail) : Except String (List Arm64Instr) := do
 
 def selectOnBlock (block : TailBlock) : Except String InstrBlock := do
   let instrs ← selectTail block.tail 
-  return { block with instructions := instrs }
+  return { block with
+    instructions := instrs
+    varSet := "tmp" :: "tmp1" :: block.varSet
+  }
 
 def pass (p : AsmProg TailBlock) : Except String (AsmProg InstrBlock) :=
   return {

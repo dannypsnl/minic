@@ -79,8 +79,8 @@ instance : ToString Arm64Instr where
   | .ret => "ret"
   | .mov dest src => s!"mov {dest}, {src}"
   | .addi dest s1 s2 => s!"add {dest}, {s1}, {s2}"
-  | .subi dest s1 s2 => s!"add {dest}, {s1}, {s2}"
-  | .smul dest s1 s2 => s!"add {dest}, {s1}, {s2}"
-  | .sdiv dest s1 s2 => s!"add {dest}, {s1}, {s2}"
+  | .subi dest s1 s2 => s!"sub {dest}, {s1}, {s2}"
+  | .smul dest s1 s2 => s!"mul {dest}, {s1}, {s2}"
+  | .sdiv dest s1 s2 => s!"sdiv {dest}, {s1}, {s2}"
 
 end Minic.IR.Arm64
