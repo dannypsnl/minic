@@ -1,10 +1,12 @@
 import Minic.Passes.ExplicateControl
+import Minic.IR.Arm64
 
 namespace Minic.Passes
+open Minic.IR.Arm64
 
-structure InstrBlock (instr : Type) extends TailBlock where
-  instructions : List instr
-instance [ToString instr] : ToString (InstrBlock instr) where
+structure InstrBlock extends TailBlock where
+  instructions : List Arm64Instr
+instance : ToString InstrBlock where
   toString b :=
     b.instructions.foldl
       (fun result instr => s!"{result}\t{toString instr}\n")
@@ -65,11 +67,11 @@ def selectTail (t : Tail) : Except String (List Arm64Instr) := do
       let r ← selectAssign (Reg.x0) (e)
       return r ++ [.ret]
 
-def selectOnBlock (block : TailBlock) : Except String (InstrBlock Arm64Instr) := do
+def selectOnBlock (block : TailBlock) : Except String InstrBlock := do
   let instrs ← selectTail block.tail 
   return { block with instructions := instrs }
 
-def pass (p : AsmProg TailBlock) : Except String (AsmProg (InstrBlock Arm64Instr)) :=
+def pass (p : AsmProg TailBlock) : Except String (AsmProg InstrBlock) :=
   return {
     arch := .arm64,
     blocks := HashMap.ofList

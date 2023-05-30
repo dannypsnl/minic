@@ -3,9 +3,9 @@ import Minic.Passes.InstrSelection
 namespace Minic.Passes
 open Minic.IR.Arm64
 
-structure Instr2Block (instr : Type) extends (InstrBlock instr) where
+structure Instr2Block extends InstrBlock where
   livenessSets : Array LiveSet
-instance [ToString instr] : ToString (Instr2Block instr) where
+instance : ToString Instr2Block where
   toString b :=
     let x := b.livenessSets.toList.map toString
     b.instructions.foldl
@@ -31,8 +31,8 @@ def livenessAnalysis (instrs : List Arm64Instr) : StateM (Array LiveSet) Unit :=
     let liveBefore_k := liveBefore (livesets.getD 0 ∅) k
     set <| livesets.push liveBefore_k
 
-def livenessOnBlock (name : String) (block : InstrBlock Arm64Instr)
-  : StateM (HashMap String LiveSet) (Instr2Block Arm64Instr) := do
+def livenessOnBlock (name : String) (block : InstrBlock)
+  : StateM (HashMap String LiveSet) Instr2Block := do
   let (_, liveSets) := (livenessAnalysis block.instructions.reverse).run .empty
   let blockToLiveSet ← get
   set (blockToLiveSet.insert name (liveSets.get! 0))
@@ -40,9 +40,9 @@ def livenessOnBlock (name : String) (block : InstrBlock Arm64Instr)
     livenessSets := liveSets
   }
 
-def pass (p : AsmProg (InstrBlock Arm64Instr)) : Id (AsmProg (Instr2Block Arm64Instr)) := do
+def pass (p : AsmProg InstrBlock) : Id (AsmProg Instr2Block) := do
   let mut blocksLiveSet : HashMap String LiveSet := HashMap.empty
-  let mut blocks' : List (String × Instr2Block Arm64Instr) := []
+  let mut blocks' : List (String × Instr2Block) := []
   for (name, block) in p.blocks.toArray do
     let (block', curBlkLiveSet) ← (livenessOnBlock name block).run HashMap.empty
     blocks' := (name, block') :: blocks'
