@@ -91,10 +91,8 @@ structure AsmProg (β : Type) where
 
 instance [ToString β] : ToString (AsmProg β) where
   toString p :=
-    let x := p.blocksLiveSet.toList
     p.blocks.toList.foldl
-      (fun result (name, block) => result ++ s!"{name}:\n{toString block}")
+      (fun result (name, block) => result ++ s!".global {name}\n{name}:\n{toString block}")
       ""
-    ++ s!"\n\nblocks live sets:\n{x}"
 
 end Minic.IR.Asm

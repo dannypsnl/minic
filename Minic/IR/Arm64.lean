@@ -55,8 +55,8 @@ instance : ToString Reg where
 abbrev Dest := Reg
 
 inductive Src
-  | sreg : Reg → Src
-  | imm : Int → Src
+  | sreg (reg : Reg)
+  | imm (val : Int)
 instance : Coe Reg Src where
   coe r := .sreg r
 instance : Coe Int Src where

@@ -36,6 +36,6 @@ mutual
 end
 
 def pass (p : MProg) : AsmProg TailBlock :=
-  { arch := .arm64, blocks := HashMap.ofList [("start", explicateTail p.expr)] }
+  { arch := .arm64, blocks := HashMap.ofList [("_miniexpr", explicateTail p.expr)] }
 
 end Minic.Passes.ExplicateControl
