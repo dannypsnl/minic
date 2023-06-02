@@ -11,7 +11,7 @@ lean_lib «Minic» {
 
 require std from git
   "https://github.com/leanprover/std4.git"
-  @"fe45c329180f4d051f9f19d1a360d9e195532afb"
+  @"6932c4ea52914dc6b0488944e367459ddc4d01a6"
 
 require graph from git
   "https://github.com/PeterKementzey/graph-library-for-lean4"
