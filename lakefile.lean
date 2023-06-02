@@ -16,7 +16,7 @@ require std from git
 require graph from git
   "https://github.com/PeterKementzey/graph-library-for-lean4"
 
-require «parsec-extra» from git "https://github.com/dannypsnl/parsec-extra"
+require «parsec-extra» from git "https://github.com/dannypsnl/parsec-extra" @"main"
 
 @[default_target]
 lean_exe «minic» {
