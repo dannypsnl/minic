@@ -7,11 +7,11 @@ open Minic.IR.Arm64
 
 def mkStore (tmpReg : Reg) (d : Dest) : Option Arm64Instr × Dest :=
   match d with
-  | .sp => (.some <| .str tmpReg d, tmpReg)
+  | .sp shift => (.some <| .str tmpReg shift, tmpReg)
   | d => (.none, d)
 def mkLoad (tmpReg : Reg) (s : Src) : Option Arm64Instr × Src :=
   match s with
-  | .sreg .sp => (.some <| .ldr tmpReg s, tmpReg)
+  | .sreg (.sp shift) => (.some <| .ldr tmpReg shift, tmpReg)
   | s => (.none, s)
 
 def patchSource (s : Option Arm64Instr) (r : List Arm64Instr) : List Arm64Instr :=
@@ -70,7 +70,7 @@ def regArray : Array Reg :=
 def toReg (n : Nat) : Reg :=
   if n < regArray.size then
     regArray.get! n
-  else .sp
+  else .sp <| (n - regArray.size) * 8
 
 def allocate (b : InstrBlock) : InstrBlock := Id.run do
   let mut i := 0
