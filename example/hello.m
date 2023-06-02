@@ -14,13 +14,4 @@ let m := l;
 let n := m;
 let o := n;
 let p := o;
-let q := p;
-let r := q;
-let s := r;
-let t := s;
-let u := t;
-let v := u;
-let w := v;
-let x := w;
-let y := x;
-y + 1
+p + 1

@@ -14,7 +14,7 @@ inductive Reg
   | x18 | x19 | x20 | x21 | x22 | x23
   | x24 | x25 | x26 | x27 | x28 | x29
   | x30
-  | sp (shift : Int)
+  | sp
   | var (name : String)
 deriving Repr, BEq, Hashable, Inhabited
 instance : Coe String Reg where
@@ -53,7 +53,7 @@ instance : ToString Reg where
   | .x28 => "x28"
   | .x29 => "x29"
   | .x30 => "x30"
-  | .sp shift => s!"sp {shift}"
+  | .sp => "sp"
 abbrev Dest := Reg
 
 inductive Src
@@ -75,8 +75,8 @@ inductive Arm64Instr
   | subi (dest : Dest) (src1 src2 : Src)
   | smul (dest : Dest) (src1 src2 : Src)
   | sdiv (dest : Dest) (src1 src2 : Src)
-  | str (src : Src) (stackShift : Int)
-  | ldr (dest : Dest) (stackShift : Int)
+  | str (src : Src) (dest : Dest)
+  | ldr (dest : Dest) (src : Src)
 
 instance : ToString Arm64Instr where
   toString
@@ -86,7 +86,7 @@ instance : ToString Arm64Instr where
   | .subi dest s1 s2 => s!"sub {dest}, {s1}, {s2}"
   | .smul dest s1 s2 => s!"mul {dest}, {s1}, {s2}"
   | .sdiv dest s1 s2 => s!"sdiv {dest}, {s1}, {s2}"
-  | .str src shift => s!"str {src}, [sp, #{shift}]"
-  | .ldr dest shift => s!"ldr {dest}, [sp, #{shift}]"
+  | .str src dest => s!"str {src}, [{dest}], #-8"
+  | .ldr dest src => s!"add sp, sp, #8\n\tldr {dest}, [{src}]"
 
 end Minic.IR.Arm64
