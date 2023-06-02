@@ -71,7 +71,7 @@ def selectTail (t : Tail) : Except String (List Arm64Instr) := do
       return r ++ [.ret]
 
 def selectOnBlock (block : TailBlock) : Except String InstrBlock := do
-  let instrs ← selectTail block.tail 
+  let instrs ← selectTail block.tail
   return { block with
     instructions := instrs
     varSet := "tmp" :: "tmp1" :: block.varSet

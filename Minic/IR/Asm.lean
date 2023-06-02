@@ -36,6 +36,8 @@ def Arm64Instr.writeSet : Arm64Instr → LiveSet
   | .subi d .. => {d}
   | .smul d .. => {d}
   | .sdiv d .. => {d}
+  | .ldr d .. => {d}
+  | .str .. => ∅
   | .ret => ∅
 def Src.liveSet : Src → LiveSet
   | Src.sreg r => {r}
@@ -48,6 +50,8 @@ def Arm64Instr.readSet : Arm64Instr → LiveSet
   | .subi _ s1 s2 => convert [s1, s2]
   | .smul _ s1 s2 => convert [s1, s2]
   | .sdiv _ s1 s2 => convert [s1, s2]
+  | .str s .. => convert [s]
+  | .ldr .. => ∅
   | .ret => ∅
 
 end Minic.IR.Arm64

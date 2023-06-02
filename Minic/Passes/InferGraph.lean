@@ -29,6 +29,7 @@ def compute (liveAfter : LiveSet) : Arm64Instr → List (Reg × Reg)
   | .subi d s1 s2 => sorry
   | .smul d s1 s2 => sorry
   | .sdiv d s1 s2 => sorry
+  | _ => sorry
 
 def inferGraphBlock (block : Instr2Block) : Instr3Block :=
   let edges := block.livenessSets.zipWith block.instructions.toArray compute

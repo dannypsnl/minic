@@ -1,4 +1,5 @@
 MC := ./build/bin/minic
+SRCS := $(shell find . -type f -not -path '*/lake-packages/*' -name '*.lean')
 
 all:
 .PHONY: all
@@ -11,7 +12,7 @@ run: build
 	@./build/a.out
 .PHONY: run
 
-build:
+build: $(SRCS)
 	@echo "building compiler ..."
 	@lake build
 .PHONY: build
