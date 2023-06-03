@@ -36,8 +36,8 @@ mutual
 
   partial def mexpr : Parsec MExpr :=
     mterm
-    |> «mixfix» [keyword "*" *> return .bin .mul, keyword "/" *> return .bin .div]
-    |> «mixfix» [keyword "+" *> return .bin .add, keyword "-" *> return .bin .sub]
+    |> «infixL» [keyword "*" *> return .bin .mul, keyword "/" *> return .bin .div]
+    |> «infixL» [keyword "+" *> return .bin .add, keyword "-" *> return .bin .sub]
 end
 
 def fileParser : Parsec MProg := do
