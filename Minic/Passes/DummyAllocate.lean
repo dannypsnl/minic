@@ -70,7 +70,7 @@ def regArray : Array Reg :=
 def toReg (n : Nat) : Reg :=
   if n < regArray.size then
     regArray.get! n
-  else .sp <| (n - regArray.size) * 8
+  else .sp <| (regArray.size - n) * 8
 
 def allocate (b : InstrBlock) : InstrBlock := Id.run do
   let mut i := 0
