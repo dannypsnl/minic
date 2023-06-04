@@ -15,4 +15,5 @@ let n := m;
 let o := n;
 let p := o;
 let q := p;
-q + 1
+let r := q;
+r + 1
