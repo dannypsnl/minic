@@ -8,9 +8,9 @@ type expr =
   | Var of string (* (+ 1 2 3) *)
   | Prim of op * expr list (* (let ([x t]) u) *)
   | Let of string * expr * expr
-[@@deriving show]
+[@@deriving show, eq]
 
-and op = Add | Sub [@@deriving show]
+and op = Add | Sub [@@deriving show, eq]
 
 let rec expr_from_sexp : Sexp.t -> expr =
  fun se ->

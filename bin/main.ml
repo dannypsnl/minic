@@ -1,6 +1,7 @@
 open Parsexp_io
+open Minic.Ast
 
 let () =
   let filename = Sys.argv.(1) in
-  let sexp = load_conv_exn Single ~filename (fun a -> a) in
-  print_endline (Base.Sexp.to_string sexp)
+  let e = load_conv_exn Single ~filename expr_from_sexp in
+  print_endline ([%derive.show: expr] e)

@@ -1,4 +1,6 @@
 (executable
  (public_name minic)
  (name main)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.eq))
  (libraries minic parsexp parsexp_io))
