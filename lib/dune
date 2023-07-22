@@ -1,2 +1,5 @@
 (library
- (name minic))
+ (name minic)
+ (preprocess
+  (pps ppx_deriving.show))
+ (libraries base parsexp))
