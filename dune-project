@@ -5,21 +5,21 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github dannypsnl/minic))
 
-(authors "Author Name")
+(authors "dannypsnl")
 
-(maintainers "Maintainer Name")
+(maintainers "dannypsnl")
 
 (license LICENSE)
 
-(documentation https://url/to/documentation)
+(documentation https://github.com/dannypsnl/minic)
 
 (package
  (name minic)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune)
+ (depends ocaml dune ppx_deriving parsexp parsexp_io)
  (tags
   (topics "to describe" your project)))
 
