@@ -2,7 +2,7 @@ open Ast
 
 exception UnboundVariable of string
 
-let rec pass : expr -> expr = fun e -> go [] e
+let rec run : expr -> expr = fun e -> go [] e
 
 and go : (string * int) list -> expr -> expr =
  fun env e ->
