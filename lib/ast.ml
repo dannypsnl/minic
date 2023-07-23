@@ -63,10 +63,9 @@ and validate_char : char -> char =
   | Some _ -> c
 
 and valid_charset : CharSet.t =
-  List.fold_right CharSet.add
+  CharSet.add_seq
     (String.to_seq
-       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-=+-*/<>?!"
-    |> List.of_seq)
+       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-=+-*/<>?!")
     CharSet.empty
 
 let rec show_ctail : ctail -> string = function
