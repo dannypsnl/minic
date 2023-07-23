@@ -2,8 +2,10 @@ exception Unhandled_sexp of Base.Sexp.t
 
 type expr =
   | Int of int
-  | Var of string (* (+ 1 2 3) *)
-  | Prim of op * expr list (* (let ([x t]) u) *)
+  | Var of string
+  (* (+ 1 2 3) *)
+  | Prim of op * expr list
+  (* (let ([x t]) u) *)
   | Let of string * expr * expr
 [@@deriving show, eq]
 
