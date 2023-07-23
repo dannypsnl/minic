@@ -12,4 +12,4 @@ let () =
   in
   print_endline "";
   print_endline "stage 3";
-  print_endline (Minic.Pass_explicate_control.show_ctail e)
+  print_endline (show_ctail e)

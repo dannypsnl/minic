@@ -2,33 +2,6 @@ open Ast
 
 exception InvalidTail of expr
 exception InvalidAtom of expr
-exception ToManyArguments of int
-
-type catom = [ `CInt of int | `CVar of string ] [@@deriving show, eq]
-
-type ctail = Return of cexpr | Seq of cstmt * ctail
-and cstmt = Assign of string * cexpr [@@deriving show, eq]
-and cexpr = [ catom | `CPrim of op * catom list ]
-
-let rec show_ctail : ctail -> string = function
-  | Return e -> show_cexpr e
-  | Seq (s, k) -> show_cstmt s ^ ";\n" ^ show_ctail k
-
-and show_cstmt : cstmt -> string = function
-  | Assign (x, e) -> x ^ " = " ^ show_cexpr e
-
-and show_cexpr : cexpr -> string = function
-  | `CInt i -> Int.to_string i
-  | `CVar x -> x
-  | `CPrim (op, [ a; b ]) ->
-      Format.sprintf "%s %s %s" (show_catom a) (show_op op) (show_catom b)
-  | `CPrim (_, es) -> raise (ToManyArguments (List.length es))
-
-and show_catom : catom -> string = function
-  | `CInt i -> Int.to_string i
-  | `CVar x -> x
-
-and show_op : op -> string = function Add -> "+" | Sub -> "-"
 
 let rec run : expr -> ctail = fun e -> explicate_tail e
 
