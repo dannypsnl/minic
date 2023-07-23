@@ -20,7 +20,7 @@ type ctail = Return of cexpr | Seq of cstmt * ctail [@@deriving eq]
 and cstmt = Assign of string * cexpr [@@deriving eq]
 and cexpr = [ catom | `CPrim of op * catom * catom ] [@@deriving eq]
 
-type reg = [ `Reg of string | `Var of string ] [@@deriving eq]
+type reg = [ `Reg of string | `Var of string ] [@@deriving eq, ord]
 
 (* aarch64 *)
 type instruction =
