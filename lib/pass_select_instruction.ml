@@ -1,7 +1,5 @@
 open Ast
 
-exception TODO
-
 let rec run : ctail -> asm = function
   | Return e -> compile_assign e (`Reg "x0") @ [ Ret ]
   | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ run c
