@@ -1,3 +1,3 @@
 #| first example |#
-(let ((x 1))
-  (+ x 2))
+(let ((x 32))
+  (+ (let ((x 10)) x) x))
