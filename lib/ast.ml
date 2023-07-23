@@ -10,12 +10,13 @@ type expr =
 
 and op = Add | Sub [@@deriving show, eq]
 
-type catom = [ `CInt of int | `CVar of string ] [@@deriving show, eq]
+type catom = [ `CInt of int | `CVar of string ]
 
 type ctail = Return of cexpr | Seq of cstmt * ctail
-and cstmt = Assign of string * cexpr [@@deriving show, eq]
+and cstmt = Assign of string * cexpr
 and cexpr = [ catom | `CPrim of op * catom list ]
 
+(* below are helper functions *)
 let rec expr_from_sexp : Base.Sexp.t -> expr =
  fun se ->
   match se with
