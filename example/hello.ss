@@ -1,2 +1,3 @@
-(let ([x 1])
+#| first example |#
+(let ((x 1))
   (+ x 2))

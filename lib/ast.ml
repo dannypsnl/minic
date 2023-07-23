@@ -1,5 +1,4 @@
 open Base
-open List
 
 exception Unhandled_sexp of Sexp.t
 
@@ -15,9 +14,9 @@ and op = Add | Sub [@@deriving show, eq]
 let rec expr_from_sexp : Sexp.t -> expr =
  fun se ->
   match se with
-  | List (Atom "+" :: rest) -> Prim (Add, map rest ~f:expr_from_sexp)
-  | List (Atom "-" :: rest) -> Prim (Sub, map rest ~f:expr_from_sexp)
-  | List [ Atom "let"; List [ Atom x; t ]; u ] ->
+  | List (Atom "+" :: rest) -> Prim (Add, List.map rest ~f:expr_from_sexp)
+  | List (Atom "-" :: rest) -> Prim (Sub, List.map rest ~f:expr_from_sexp)
+  | List [ Atom "let"; List [ List [ Atom x; t ] ]; u ] ->
       Let (validate_varname x, expr_from_sexp t, expr_from_sexp u)
   | Atom x -> (
       match Int.of_string_opt x with
