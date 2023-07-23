@@ -1,5 +1,4 @@
 exception Unhandled_sexp of Base.Sexp.t
-exception ToManyArguments of int
 
 type expr =
   | Int of int
@@ -14,7 +13,7 @@ type catom = [ `CInt of int | `CVar of string ]
 
 type ctail = Return of cexpr | Seq of cstmt * ctail
 and cstmt = Assign of string * cexpr
-and cexpr = [ catom | `CPrim of op * catom list ]
+and cexpr = [ catom | `CPrim of op * catom * catom ]
 
 type reg = [ `Reg of string | `Var of string ]
 
@@ -62,9 +61,8 @@ and show_cstmt : cstmt -> string = function
 and show_cexpr : cexpr -> string = function
   | `CInt i -> Int.to_string i
   | `CVar x -> x
-  | `CPrim (op, [ a; b ]) ->
+  | `CPrim (op, a, b) ->
       Format.sprintf "%s %s %s" (show_catom a) (show_op op) (show_catom b)
-  | `CPrim (_, es) -> raise (ToManyArguments (List.length es))
 
 and show_catom : catom -> string = function
   | `CInt i -> Int.to_string i

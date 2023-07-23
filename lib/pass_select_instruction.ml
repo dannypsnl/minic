@@ -11,11 +11,10 @@ and compile_assign : cexpr -> dest -> asm =
   match expression with
   | `CInt i -> [ Mov (assign_to, `Imm i) ]
   | `CVar x -> [ Mov (assign_to, `Var x) ]
-  | `CPrim (op, [ e1; e2 ]) -> (
+  | `CPrim (op, e1, e2) -> (
       match op with
       | Add -> [ Add (assign_to, compile_atom e1, compile_atom e2) ]
       | Sub -> [ Sub (assign_to, compile_atom e1, compile_atom e2) ])
-  | `CPrim (_, es) -> raise (ToManyArguments (List.length es))
 
 and compile_atom : catom -> src = function
   | `CInt i -> `Imm i
