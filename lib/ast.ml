@@ -22,6 +22,19 @@ and cexpr = [ catom | `CPrim of op * catom * catom ] [@@deriving eq]
 
 type reg = [ `Reg of string | `Var of string ] [@@deriving eq, ord]
 
+module Reg = struct
+  type t = reg
+
+  let compare a b = [%derive.ord: reg] a b
+end
+
+module RegSet = Set.Make (Reg)
+
+let show_regset : RegSet.t -> string =
+ fun set ->
+  let f = function `Reg x -> x | `Var x -> "@" ^ x in
+  "{ " ^ (RegSet.elements set |> List.map f |> String.concat ", ") ^ " }"
+
 (* aarch64 *)
 type instruction =
   (* add x0, x1, x2 *)

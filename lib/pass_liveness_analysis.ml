@@ -1,18 +1,5 @@
 open Ast
 
-module Reg = struct
-  type t = reg
-
-  let compare a b = [%derive.ord: reg] a b
-end
-
-module RegSet = Set.Make (Reg)
-
-let show_regset : RegSet.t -> string =
- fun set ->
-  let f = function `Reg x -> x | `Var x -> "@" ^ x in
-  "{ " ^ (RegSet.elements set |> List.map f |> String.concat ", ") ^ " }"
-
 let rec run : asm -> asm * RegSet.t list =
  fun prog ->
   let live_sets = List.fold_right analyze_instr prog [ RegSet.empty ] in

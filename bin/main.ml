@@ -2,17 +2,16 @@ open Base
 open Parsexp_io
 open Minic.Ast
 
-let rec print_liveset :
-    asm -> Minic.Pass_liveness_analysis.RegSet.t list -> unit =
+let rec print_liveset : asm -> RegSet.t list -> unit =
  fun prog live_sets ->
   match live_sets with
   | [] -> ()
   | x :: rest ->
       Stdio.print_string "\t";
-      Stdio.print_endline (Minic.Pass_liveness_analysis.show_regset x);
+      Stdio.print_endline (show_regset x);
       print_instr prog rest
 
-and print_instr : asm -> Minic.Pass_liveness_analysis.RegSet.t list -> unit =
+and print_instr : asm -> RegSet.t list -> unit =
  fun prog live_sets ->
   match prog with
   | [] -> ()
