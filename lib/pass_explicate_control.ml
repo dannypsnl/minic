@@ -21,9 +21,9 @@ and explicate_assign : expr -> string -> ctail -> ctail =
   match e with
   | Int i -> Seq (Assign (x, `CInt i), cont)
   | Var x -> Seq (Assign (x, `CVar x), cont)
-  | Let (x, t, body) ->
+  | Let (x2, t, body) ->
       let body' = explicate_assign body x cont in
-      explicate_assign t x body'
+      explicate_assign t x2 body'
   | Prim (op, [ a; b ]) ->
       Seq (Assign (x, `CPrim (op, explicate_atom a, explicate_atom b)), cont)
   | Prim (_, es) -> raise (ToManyArguments (List.length es))
