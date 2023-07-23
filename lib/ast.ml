@@ -16,6 +16,25 @@ type ctail = Return of cexpr | Seq of cstmt * ctail
 and cstmt = Assign of string * cexpr
 and cexpr = [ catom | `CPrim of op * catom list ]
 
+type reg = [ `Reg of string | `Var of string ]
+
+(* aarch64 *)
+type instruction =
+  (* add x0, x1, x2 *)
+  (* 表示 x0 = x1 + x2 *)
+  | Add of dest * src * src
+  (* sub x0, x1, x2 *)
+  (* 表示 x0 = x1 - x2 *)
+  | Sub of dest * src * src
+  (* mov x0, x1 *)
+  (* 表示從 x0 = x1 *)
+  | Mov of dest * src
+  | Ret
+
+and asm = instruction list
+and dest = reg
+and src = [ reg | `Imm of int ]
+
 (* below are helper functions *)
 let rec expr_from_sexp : Base.Sexp.t -> expr =
  fun se ->
@@ -52,3 +71,21 @@ and show_catom : catom -> string = function
   | `CVar x -> x
 
 and show_op : op -> string = function Add -> "+" | Sub -> "-"
+
+let rec show_asm : asm -> string =
+ fun prog -> List.map show_instruction prog |> String.concat "\n"
+
+and show_instruction : instruction -> string = function
+  | Add (d, s1, s2) ->
+      Format.sprintf "add %s, %s, %s" (show_dest d) (show_src s1) (show_src s2)
+  | Sub (d, s1, s2) ->
+      Format.sprintf "sub %s, %s, %s" (show_dest d) (show_src s1) (show_src s2)
+  | Mov (d, s) -> Format.sprintf "mov %s, %s" (show_dest d) (show_src s)
+  | Ret -> "ret"
+
+and show_dest : dest -> string = function `Reg x -> x | `Var x -> "@" ^ x
+
+and show_src : src -> string = function
+  | `Reg x -> x
+  | `Imm i -> Int.to_string i
+  | `Var x -> "@" ^ x

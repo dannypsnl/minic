@@ -12,4 +12,8 @@ let () =
   in
   print_endline "";
   print_endline "stage 3";
-  print_endline (show_ctail e)
+  print_endline (show_ctail e);
+  let e = e |> Minic.Pass_select_instruction.run in
+  print_endline "";
+  print_endline "stage 4";
+  print_endline (show_asm e)
