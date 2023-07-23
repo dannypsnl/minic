@@ -14,13 +14,13 @@ type expr =
 
 and op = Add | Sub [@@deriving show, eq]
 
-type catom = [ `CInt of int | `CVar of string ]
+type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 
-type ctail = Return of cexpr | Seq of cstmt * ctail
-and cstmt = Assign of string * cexpr
-and cexpr = [ catom | `CPrim of op * catom * catom ]
+type ctail = Return of cexpr | Seq of cstmt * ctail [@@deriving eq]
+and cstmt = Assign of string * cexpr [@@deriving eq]
+and cexpr = [ catom | `CPrim of op * catom * catom ] [@@deriving eq]
 
-type reg = [ `Reg of string | `Var of string ]
+type reg = [ `Reg of string | `Var of string ] [@@deriving eq]
 
 (* aarch64 *)
 type instruction =
@@ -34,10 +34,11 @@ type instruction =
   (* 表示從 x0 = x1 *)
   | Mov of dest * src
   | Ret
+[@@deriving eq]
 
-and asm = instruction list
-and dest = reg
-and src = [ reg | `Imm of int ]
+and asm = instruction list [@@deriving eq]
+and dest = reg [@@deriving eq]
+and src = [ reg | `Imm of int ] [@@deriving eq]
 
 (* below are helper functions *)
 let rec expr_from_sexp : Base.Sexp.t -> expr =
