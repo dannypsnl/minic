@@ -1,4 +1,7 @@
+module CharSet = Set.Make (Char)
+
 exception Unhandled_sexp of Base.Sexp.t
+exception InvalidCharInVariable of char
 
 type expr =
   | Int of int
@@ -50,8 +53,20 @@ let rec expr_from_sexp : Base.Sexp.t -> expr =
       | None -> Var (validate_varname x))
   | List _ -> raise (Unhandled_sexp se)
 
-(* TODO: raise exception for bad name like `123` *)
-and validate_varname : string -> string = fun x -> x
+and validate_varname : string -> string = fun x -> String.map validate_char x
+
+and validate_char : char -> char =
+ fun c ->
+  match CharSet.find_opt c valid_charset with
+  | None -> raise (InvalidCharInVariable c)
+  | Some _ -> c
+
+and valid_charset : CharSet.t =
+  List.fold_right CharSet.add
+    (String.to_seq
+       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-=+-*/<>?!"
+    |> List.of_seq)
+    CharSet.empty
 
 let rec show_ctail : ctail -> string = function
   | Return e -> show_cexpr e
