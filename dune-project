@@ -19,7 +19,7 @@
  (name minic)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune ppx_deriving parsexp parsexp_io)
+ (depends ocaml dune ppx_deriving parsexp parsexp_io ocamlgraph)
  (tags
   (topics "to describe" your project)))
 
