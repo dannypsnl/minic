@@ -63,6 +63,12 @@ and coloring : vertex list -> reg ColorM.t -> unit =
           vs
       in
       let available = RegSet.diff all_register ad in
+      (* TODO: we can run out of available here
+         by definition, that means we have to allocate data into stack.
+
+         To complete this, we need to add stack pointer as possible virtual register.
+         Then if instruction's dest is a stack pointer, we have to break it to two instructions.
+      *)
       let picked_color = RegSet.elements available |> List.hd in
       ColorM.add colors x picked_color;
       coloring rest colors
@@ -71,6 +77,7 @@ and coloring : vertex list -> reg ColorM.t -> unit =
 and all_register : RegSet.t =
   RegSet.of_list
     [
+      (* function call might take x0-x8 *)
       `Reg "x0";
       `Reg "x1";
       `Reg "x2";
@@ -80,6 +87,7 @@ and all_register : RegSet.t =
       `Reg "x6";
       `Reg "x7";
       `Reg "x8";
+      (* middle x9-x28 is safe to use *)
       `Reg "x9";
       `Reg "x10";
       `Reg "x11";
@@ -90,4 +98,17 @@ and all_register : RegSet.t =
       `Reg "x16";
       `Reg "x17";
       `Reg "x18";
+      `Reg "x19";
+      `Reg "x20";
+      `Reg "x21";
+      `Reg "x22";
+      `Reg "x23";
+      `Reg "x24";
+      `Reg "x25";
+      `Reg "x26";
+      `Reg "x27";
+      `Reg "x28";
+      (* `x29` is frame pointer *)
+      (* `x30` stores the return address of function *)
+      (* `x31` is stack pointer, alias is `sp` *)
     ]
