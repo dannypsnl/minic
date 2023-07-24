@@ -1,7 +1,6 @@
 open Ast
+open Graph
 
 exception TODO
 
-type graph
-
-let run : asm -> asm * graph = fun _ -> raise TODO
+let run : asm -> asm * Graph.t = fun _ -> raise TODO
