@@ -1,7 +1,28 @@
 open Ast
 
+let rec print_liveset : asm -> RegSet.t list -> unit =
+ fun prog live_sets ->
+  match live_sets with
+  | [] -> ()
+  | x :: rest ->
+      print_string "\t";
+      print_endline (show_regset x);
+      print_instr prog rest
+
+and print_instr : asm -> RegSet.t list -> unit =
+ fun prog live_sets ->
+  match prog with
+  | [] -> ()
+  | x :: rest ->
+      print_endline (show_instruction x);
+      print_liveset rest live_sets
+
 let rec run : asm -> RegSet.t list =
- fun prog -> List.fold_right analyze_instr prog [ RegSet.empty ]
+ fun prog ->
+  let live_sets = List.fold_right analyze_instr prog [ RegSet.empty ] in
+  print_endline "\nstage 5: liveness analysis";
+  print_liveset prog live_sets;
+  live_sets
 
 and analyze_instr : instruction -> RegSet.t list -> RegSet.t list =
  fun cur_instr live_sets ->

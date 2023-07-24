@@ -97,7 +97,8 @@ and show_catom : catom -> string = function
 and show_op : op -> string = function Add -> "+" | Sub -> "-"
 
 let rec show_asm : asm -> string =
- fun prog -> List.map show_instruction prog |> String.concat "\n"
+ fun prog ->
+  List.map (fun i -> "\t" ^ show_instruction i) prog |> String.concat "\n"
 
 and show_instruction : instruction -> string = function
   | Add (d, s1, s2) ->

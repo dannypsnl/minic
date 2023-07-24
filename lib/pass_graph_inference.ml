@@ -34,4 +34,7 @@ let run : asm -> RegSet.t list -> Graph.t =
                      Graph.vertex d |> Graph.overlay !conflict_graph)
                vs
          | Ret -> ());
-  !conflict_graph
+  let g = !conflict_graph in
+  print_endline "\nstage 6: conflict graph";
+  print_endline (Graph.show g);
+  g
