@@ -20,7 +20,7 @@ type ctail = Return of cexpr | Seq of cstmt * ctail [@@deriving eq]
 and cstmt = Assign of string * cexpr [@@deriving eq]
 and cexpr = [ catom | `CPrim of op * catom * catom ] [@@deriving eq]
 
-type reg = [ `Reg of string | `Var of string ] [@@deriving eq, ord]
+type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
 
 (* aarch64 *)
 type instruction =
@@ -37,14 +37,18 @@ type instruction =
 [@@deriving eq]
 
 and asm = instruction list [@@deriving eq]
-and dest = reg [@@deriving eq]
+and dest = reg
 and src = [ reg | `Imm of int ] [@@deriving eq]
 
 module Reg = struct
   type t = reg
 
   let compare a b = [%derive.ord: reg] a b
-  let to_src : reg -> src = function `Reg x -> `Reg x | `Var x -> `Var x
+
+  let to_src : reg -> src = function
+    | `Reg x -> `Reg x
+    | `Var x -> `Var x
+    | `Sp shift -> `Sp shift
 end
 
 module RegSet = Set.Make (Reg)
@@ -108,14 +112,22 @@ and show_instruction : instruction -> string = function
   | Mov (d, s) -> Format.sprintf "mov %s, %s" (show_reg d) (show_src s)
   | Ret -> "ret"
 
-and show_reg : reg -> string = function `Reg x -> x | `Var x -> "@" ^ x
+and show_reg : reg -> string = function
+  | `Sp shift -> "[sp, " ^ Int.to_string shift ^ "]"
+  | `Reg x -> x
+  | `Var x -> "@" ^ x
 
 and show_src : src -> string = function
+  | `Sp shift -> "[sp, " ^ Int.to_string shift ^ "]"
   | `Reg x -> x
   | `Imm i -> Int.to_string i
   | `Var x -> "@" ^ x
 
 let show_regset : RegSet.t -> string =
  fun set ->
-  let f = function `Reg x -> x | `Var x -> "@" ^ x in
+  let f = function
+    | `Reg x -> x
+    | `Var x -> "@" ^ x
+    | `Sp shift -> "[sp, " ^ Int.to_string shift ^ "]"
+  in
   "{ " ^ (RegSet.elements set |> List.map f |> String.concat ", ") ^ " }"

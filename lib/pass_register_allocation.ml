@@ -12,7 +12,7 @@ let rec run : debug:int -> asm -> Graph.t -> asm =
     working_set
     (* filter out register, they should not be rewritten by this pass *)
     |> List.filter (fun (V { value = v; _ }) ->
-           match v with `Reg _ -> false | `Var _ -> true)
+           match v with `Var _ -> true | _ -> false)
     |> List.sort (fun (V { adjacency = s; _ }) (V { adjacency = s2; _ }) ->
            let a = RegSet.elements s |> List.length in
            let b = RegSet.elements s2 |> List.length in
@@ -37,15 +37,14 @@ let rec run : debug:int -> asm -> Graph.t -> asm =
   prog
 
 and subst_dest : reg ColorM.t -> dest -> dest =
- fun colors d ->
-  match d with `Reg r -> `Reg r | `Var x -> ColorM.find colors x
+ fun colors d -> match d with `Var x -> ColorM.find colors x | reg -> reg
 
 and subst_src : reg ColorM.t -> src -> src =
  fun colors s ->
   match s with
-  | `Reg r -> `Reg r
   | `Var x -> ColorM.find colors x |> Reg.to_src
   | `Imm i -> `Imm i
+  | reg -> reg
 
 and coloring : vertex list -> reg ColorM.t -> unit =
  fun ws colors ->
@@ -55,21 +54,30 @@ and coloring : vertex list -> reg ColorM.t -> unit =
       let ad =
         RegSet.map
           (function
-            | `Reg x -> `Reg x
             | `Var x -> (
                 match ColorM.find_opt colors x with
                 | Some r -> r
-                | None -> `Var x))
+                | None -> `Var x)
+            | reg -> reg)
           vs
       in
       let available = RegSet.diff all_register ad in
-      (* TODO: we can run out of available here
-         by definition, that means we have to allocate data into stack.
 
-         To complete this, we need to add stack pointer as possible virtual register.
-         Then if instruction's dest is a stack pointer, we have to break it to two instructions.
-      *)
-      let picked_color = RegSet.elements available |> List.hd in
+      let sp_list =
+        RegSet.elements ad
+        |> List.filter (function
+             | `Reg _ -> false
+             | `Var _ -> false
+             | `Sp _ -> true)
+        |> List.sort (fun a b ->
+               match (a, b) with `Sp i, `Sp j -> compare i j | _ -> 0)
+      in
+      let max_shift = match sp_list with `Sp i :: _ -> i | _ :: _ | [] -> 0 in
+      let picked_color =
+        match RegSet.elements available with
+        | [] -> `Sp (max_shift + 8)
+        | h :: _ -> h
+      in
       ColorM.add colors x picked_color;
       coloring rest colors
   | V { value = _; _ } :: _ -> raise FilterOut
