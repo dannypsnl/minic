@@ -15,7 +15,6 @@ depends: [
   "ppx_deriving"
   "parsexp"
   "parsexp_io"
-  "ocamlgraph"
   "odoc" {with-doc}
 ]
 build: [
