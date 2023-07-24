@@ -1,9 +1,7 @@
 open Ast
 
-let rec run : asm -> asm * RegSet.t list =
- fun prog ->
-  let live_sets = List.fold_right analyze_instr prog [ RegSet.empty ] in
-  (prog, live_sets)
+let rec run : asm -> RegSet.t list =
+ fun prog -> List.fold_right analyze_instr prog [ RegSet.empty ]
 
 and analyze_instr : instruction -> RegSet.t list -> RegSet.t list =
  fun cur_instr live_sets ->

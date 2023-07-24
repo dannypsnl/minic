@@ -1,6 +1,7 @@
 open Base
 open Parsexp_io
 open Minic.Ast
+open Minic.Graph
 
 let rec print_liveset : asm -> RegSet.t list -> unit =
  fun prog live_sets ->
@@ -35,9 +36,12 @@ let () =
   let e = e |> Minic.Pass_explicate_control.run in
   Stdio.print_endline "\nstage 3: explicate control";
   Stdio.print_endline (show_ctail e);
-  let e = e |> Minic.Pass_select_instruction.run in
+  let prog = e |> Minic.Pass_select_instruction.run in
   Stdio.print_endline "\nstage 4: select instructions";
-  Stdio.print_endline (show_asm e);
-  let prog, live_sets = e |> Minic.Pass_liveness_analysis.run in
+  Stdio.print_endline (show_asm prog);
+  let live_sets = prog |> Minic.Pass_liveness_analysis.run in
   Stdio.print_endline "\nstage 5: liveness analysis";
-  print_liveset prog live_sets
+  print_liveset prog live_sets;
+  let conflict_graph = Minic.Pass_graph_inference.run prog live_sets in
+  Stdio.print_endline "\nstage 6: conflict graph";
+  Stdio.print_endline (Graph.show conflict_graph)

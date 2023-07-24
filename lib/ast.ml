@@ -101,13 +101,13 @@ let rec show_asm : asm -> string =
 
 and show_instruction : instruction -> string = function
   | Add (d, s1, s2) ->
-      Format.sprintf "add %s, %s, %s" (show_dest d) (show_src s1) (show_src s2)
+      Format.sprintf "add %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
   | Sub (d, s1, s2) ->
-      Format.sprintf "sub %s, %s, %s" (show_dest d) (show_src s1) (show_src s2)
-  | Mov (d, s) -> Format.sprintf "mov %s, %s" (show_dest d) (show_src s)
+      Format.sprintf "sub %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
+  | Mov (d, s) -> Format.sprintf "mov %s, %s" (show_reg d) (show_src s)
   | Ret -> "ret"
 
-and show_dest : dest -> string = function `Reg x -> x | `Var x -> "@" ^ x
+and show_reg : reg -> string = function `Reg x -> x | `Var x -> "@" ^ x
 
 and show_src : src -> string = function
   | `Reg x -> x

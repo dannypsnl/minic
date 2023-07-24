@@ -1,7 +1,5 @@
 open Ast
 
-exception TODO
-
 type vertex =
   | V of {
       value : reg; (* each register is a vertex of conflict graph *)
@@ -13,6 +11,8 @@ module Vertex = struct
 
   let compare : vertex -> vertex -> int =
    fun (V { value = a; _ }) (V { value = b; _ }) -> [%derive.ord: reg] a b
+
+  let show (V { value = reg; _ }) = show_reg reg
 end
 
 module VertexSet = Set.Make (Vertex)
@@ -23,7 +23,10 @@ module Graph = struct
   type t = graph
 
   let empty = VertexSet.empty
-  let vertex reg = V { value = reg; adjacency = RegSet.empty }
+
+  let vertex reg =
+    VertexSet.singleton (V { value = reg; adjacency = RegSet.empty })
+
   let overlay g1 g2 = VertexSet.union g1 g2
 
   let connect g1 g2 =
@@ -38,4 +41,18 @@ module Graph = struct
             V { value = v; adjacency = s |> RegSet.union g2_vertcies })
       g1
     |> VertexSet.union g2
+
+  let show g =
+    let vs = VertexSet.to_seq g |> List.of_seq in
+    let paths =
+      vs
+      |> List.map (fun (V { value = from; adjacency = s }) ->
+             RegSet.to_seq s |> List.of_seq
+             |> List.map (fun to_ ->
+                    Printf.sprintf "%s -> %s" (show_reg from) (show_reg to_)))
+    in
+    "{ "
+    ^ (vs |> List.map Vertex.show |> String.concat ", ")
+    ^ " }" ^ "\n"
+    ^ (paths |> List.concat |> String.concat " ")
 end
