@@ -21,7 +21,7 @@ let rec run : debug:int -> asm -> Graph.t -> asm =
   let color_map : reg ColorM.t = ColorM.create (List.length working_set) in
   coloring working_set color_map;
   let drw = subst_dest color_map in
-  let srw = subst_reg color_map in
+  let srw = subst_src color_map in
   let prog =
     List.map
       (function
@@ -40,7 +40,7 @@ and subst_dest : reg ColorM.t -> dest -> dest =
  fun colors d ->
   match d with `Reg r -> `Reg r | `Var x -> ColorM.find colors x
 
-and subst_reg : reg ColorM.t -> src -> src =
+and subst_src : reg ColorM.t -> src -> src =
  fun colors s ->
   match s with
   | `Reg r -> `Reg r
