@@ -1,9 +1,13 @@
 open Ast
 
-let rec run : expr -> expr =
- fun e ->
+let rec run : debug:bool -> expr -> expr =
+ fun ~debug e ->
   temp_var_cnt := 1;
-  rco_expr e
+  let e = rco_expr e in
+  if debug then (
+    print_endline "\nstage 2: remove complex operands";
+    print_endline (show_expr e));
+  e
 
 and rco_atom : expr -> expr * (string * expr) list =
  fun e ->

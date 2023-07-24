@@ -1,8 +1,8 @@
 open Ast
 open Graph
 
-let run : asm -> RegSet.t list -> Graph.t =
- fun prog live_sets ->
+let run : debug:bool -> asm -> RegSet.t list -> Graph.t =
+ fun ~debug prog live_sets ->
   let conflict_graph = ref Graph.empty in
   List.combine prog (List.tl live_sets)
   |> List.iter (fun (instr, live_after) ->
@@ -35,6 +35,7 @@ let run : asm -> RegSet.t list -> Graph.t =
                vs
          | Ret -> ());
   let g = !conflict_graph in
-  print_endline "\nstage 6: conflict graph";
-  print_endline (Graph.show g);
+  if debug then (
+    print_endline "\nstage 6: conflict graph";
+    print_endline (Graph.show g));
   g

@@ -1,8 +1,16 @@
 open Ast
 
-let rec run : ctail -> asm = function
+let rec run : debug:bool -> ctail -> asm =
+ fun ~debug t ->
+  let prog = go t in
+  if debug then (
+    print_endline "\nstage 4: select instructions";
+    print_endline (show_asm prog));
+  prog
+
+and go : ctail -> asm = function
   | Return e -> compile_assign e (`Reg "x0") @ [ Ret ]
-  | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ run c
+  | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ go c
 
 and compile_assign : cexpr -> dest -> asm =
  fun expression assign_to ->

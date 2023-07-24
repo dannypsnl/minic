@@ -5,8 +5,8 @@ exception FilterOut
 
 module ColorM = Hashtbl.Make (String)
 
-let rec run : asm -> Graph.t -> asm =
- fun prog g ->
+let rec run : debug:bool -> asm -> Graph.t -> asm =
+ fun ~debug prog g ->
   let working_set = Graph.verticies g in
   let working_set : vertex list =
     working_set
@@ -22,13 +22,19 @@ let rec run : asm -> Graph.t -> asm =
   coloring working_set color_map;
   let drw = subst_dest color_map in
   let srw = subst_reg color_map in
-  List.map
-    (function
-      | Add (d, s1, s2) -> Add (drw d, srw s1, srw s2)
-      | Sub (d, s1, s2) -> Sub (drw d, srw s1, srw s2)
-      | Mov (d, s) -> Mov (drw d, srw s)
-      | Ret -> Ret)
-    prog
+  let prog =
+    List.map
+      (function
+        | Add (d, s1, s2) -> Add (drw d, srw s1, srw s2)
+        | Sub (d, s1, s2) -> Sub (drw d, srw s1, srw s2)
+        | Mov (d, s) -> Mov (drw d, srw s)
+        | Ret -> Ret)
+      prog
+  in
+  if debug then (
+    print_endline "\nstage 7: register allocation";
+    print_endline (show_asm prog));
+  prog
 
 and subst_dest : reg ColorM.t -> dest -> dest =
  fun colors d ->

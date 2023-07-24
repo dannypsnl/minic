@@ -17,11 +17,12 @@ and print_instr : asm -> RegSet.t list -> unit =
       print_endline (show_instruction x);
       print_liveset rest live_sets
 
-let rec run : asm -> RegSet.t list =
- fun prog ->
+let rec run : debug:bool -> asm -> RegSet.t list =
+ fun ~debug prog ->
   let live_sets = List.fold_right analyze_instr prog [ RegSet.empty ] in
-  print_endline "\nstage 5: liveness analysis";
-  print_liveset prog live_sets;
+  if debug then (
+    print_endline "\nstage 5: liveness analysis";
+    print_liveset prog live_sets);
   live_sets
 
 and analyze_instr : instruction -> RegSet.t list -> RegSet.t list =
