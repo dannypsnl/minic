@@ -4,10 +4,10 @@ exception InvalidTail of expr
 exception InvalidAtom of expr
 exception ToManyArguments of int
 
-let rec run : debug:bool -> expr -> ctail =
+let rec run : debug:int -> expr -> ctail =
  fun ~debug e ->
   let r = explicate_tail e in
-  if debug then (
+  if debug >= 2 then (
     print_endline "\nstage 3: explicate control";
     print_endline (show_ctail r));
   r

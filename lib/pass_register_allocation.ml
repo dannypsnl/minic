@@ -5,7 +5,7 @@ exception FilterOut
 
 module ColorM = Hashtbl.Make (String)
 
-let rec run : debug:bool -> asm -> Graph.t -> asm =
+let rec run : debug:int -> asm -> Graph.t -> asm =
  fun ~debug prog g ->
   let working_set = Graph.verticies g in
   let working_set : vertex list =
@@ -31,7 +31,7 @@ let rec run : debug:bool -> asm -> Graph.t -> asm =
         | Ret -> Ret)
       prog
   in
-  if debug then (
+  if debug >= 1 then (
     print_endline "\nstage 7: register allocation";
     print_endline (show_asm prog));
   prog

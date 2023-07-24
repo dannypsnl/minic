@@ -1,10 +1,10 @@
 open Ast
 
-let rec run : debug:bool -> expr -> expr =
+let rec run : debug:int -> expr -> expr =
  fun ~debug e ->
   temp_var_cnt := 1;
   let e = rco_expr e in
-  if debug then (
+  if debug >= 2 then (
     print_endline "\nstage 2: remove complex operands";
     print_endline (show_expr e));
   e

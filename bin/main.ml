@@ -3,14 +3,15 @@ open Parsexp_io
 open Minic.Ast
 
 let () =
-  let debug = false in
+  (* debug range: 0 ~ 3 *)
+  let debug = 1 in
   let filename = (Sys.get_argv ()).(1) in
   let e = load_conv_exn Single ~filename (fun e -> e) in
-  if debug then (
+  if debug >= 3 then (
     Stdio.print_endline "stage 0: s-expression";
     Stdio.print_endline (Sexp.to_string e));
   let e = e |> expr_from_sexp in
-  if debug then (
+  if debug >= 3 then (
     Stdio.print_endline "\nstage 1: to expr";
     Stdio.print_endline ([%derive.show: expr] e));
   let e =

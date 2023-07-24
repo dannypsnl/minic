@@ -1,9 +1,9 @@
 open Ast
 
-let rec run : debug:bool -> ctail -> asm =
+let rec run : debug:int -> ctail -> asm =
  fun ~debug t ->
   let prog = go t in
-  if debug then (
+  if debug >= 2 then (
     print_endline "\nstage 4: select instructions";
     print_endline (show_asm prog));
   prog
