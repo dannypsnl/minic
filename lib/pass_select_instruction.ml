@@ -11,8 +11,16 @@ and compile_assign : cexpr -> dest -> asm =
   | `CVar x -> [ Mov (assign_to, `Var x) ]
   | `CPrim (op, e1, e2) -> (
       match op with
-      | Add -> [ Add (assign_to, compile_atom e1, compile_atom e2) ]
-      | Sub -> [ Sub (assign_to, compile_atom e1, compile_atom e2) ])
+      | Add ->
+          [
+            Mov (assign_to, compile_atom e1);
+            Add (assign_to, Reg.to_src assign_to, compile_atom e2);
+          ]
+      | Sub ->
+          [
+            Mov (assign_to, compile_atom e1);
+            Sub (assign_to, Reg.to_src assign_to, compile_atom e2);
+          ])
 
 and compile_atom : catom -> src = function
   | `CInt i -> `Imm i

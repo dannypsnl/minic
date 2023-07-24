@@ -22,19 +22,6 @@ and cexpr = [ catom | `CPrim of op * catom * catom ] [@@deriving eq]
 
 type reg = [ `Reg of string | `Var of string ] [@@deriving eq, ord]
 
-module Reg = struct
-  type t = reg
-
-  let compare a b = [%derive.ord: reg] a b
-end
-
-module RegSet = Set.Make (Reg)
-
-let show_regset : RegSet.t -> string =
- fun set ->
-  let f = function `Reg x -> x | `Var x -> "@" ^ x in
-  "{ " ^ (RegSet.elements set |> List.map f |> String.concat ", ") ^ " }"
-
 (* aarch64 *)
 type instruction =
   (* add x0, x1, x2 *)
@@ -52,6 +39,15 @@ type instruction =
 and asm = instruction list [@@deriving eq]
 and dest = reg [@@deriving eq]
 and src = [ reg | `Imm of int ] [@@deriving eq]
+
+module Reg = struct
+  type t = reg
+
+  let compare a b = [%derive.ord: reg] a b
+  let to_src : reg -> src = function `Reg x -> `Reg x | `Var x -> `Var x
+end
+
+module RegSet = Set.Make (Reg)
 
 (* below are helper functions *)
 let rec expr_from_sexp : Base.Sexp.t -> expr =
@@ -117,3 +113,8 @@ and show_src : src -> string = function
   | `Reg x -> x
   | `Imm i -> Int.to_string i
   | `Var x -> "@" ^ x
+
+let show_regset : RegSet.t -> string =
+ fun set ->
+  let f = function `Reg x -> x | `Var x -> "@" ^ x in
+  "{ " ^ (RegSet.elements set |> List.map f |> String.concat ", ") ^ " }"
