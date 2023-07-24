@@ -16,18 +16,22 @@ let run : asm -> RegSet.t list -> Graph.t =
                    && not ([%derive.eq: src] (Reg.to_src v) s)
                  then
                    conflict_graph :=
-                     Graph.overlay !conflict_graph
-                       (Graph.connect (Graph.vertex v) (Graph.vertex d))
-                 else ())
+                     Graph.connect (Graph.vertex v) (Graph.vertex d)
+                     |> Graph.overlay !conflict_graph
+                 else
+                   conflict_graph :=
+                     Graph.vertex d |> Graph.overlay !conflict_graph)
                vs
          | Add (d, _, _) | Sub (d, _, _) ->
              List.iter
                (fun v ->
                  if not ([%derive.eq: reg] v d) then
                    conflict_graph :=
-                     Graph.overlay !conflict_graph
-                       (Graph.connect (Graph.vertex v) (Graph.vertex d))
-                 else ())
+                     Graph.connect (Graph.vertex v) (Graph.vertex d)
+                     |> Graph.overlay !conflict_graph
+                 else
+                   conflict_graph :=
+                     Graph.vertex d |> Graph.overlay !conflict_graph)
                vs
          | Ret -> ());
   !conflict_graph

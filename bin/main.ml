@@ -44,4 +44,7 @@ let () =
   print_liveset prog live_sets;
   let conflict_graph = Minic.Pass_graph_inference.run prog live_sets in
   Stdio.print_endline "\nstage 6: conflict graph";
-  Stdio.print_endline (Graph.show conflict_graph)
+  Stdio.print_endline (Graph.show conflict_graph);
+  let prog = Minic.Pass_register_allocation.run prog conflict_graph in
+  Stdio.print_endline "\nstage 7: register allocation";
+  Stdio.print_endline (show_asm prog)

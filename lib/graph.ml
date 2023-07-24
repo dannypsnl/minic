@@ -42,6 +42,8 @@ module Graph = struct
       g1
     |> VertexSet.union g2
 
+  let verticies g = VertexSet.to_seq g |> List.of_seq
+
   let show g =
     let vs = VertexSet.to_seq g |> List.of_seq in
     let paths =
