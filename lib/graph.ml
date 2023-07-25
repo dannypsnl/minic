@@ -55,6 +55,6 @@ module Graph = struct
     in
     "{ "
     ^ (vs |> List.map Vertex.show |> String.concat ", ")
-    ^ " }" ^ "\n"
+    ^ " }\n"
     ^ (paths |> List.concat |> String.concat " ")
 end

@@ -16,21 +16,27 @@ let run : debug:int -> asm -> RegSet.t list -> Graph.t =
                       && not ([%derive.eq: src] (Reg.to_src v) s)
                     then
                       conflict_graph :=
-                        Graph.connect (Graph.vertex v) (Graph.vertex d)
-                        |> Graph.overlay !conflict_graph
+                        !conflict_graph
+                        |> Graph.overlay
+                             (Graph.connect (Graph.vertex v) (Graph.vertex d))
                     else
                       conflict_graph :=
-                        Graph.vertex d |> Graph.overlay !conflict_graph)
+                        !conflict_graph |> Graph.overlay (Graph.vertex d))
          | Add (d, _, _) | Sub (d, _, _) ->
+             print_endline "live set dododo";
+             print_endline
+               (Graph.connect (Graph.vertex (`Reg "test")) (Graph.vertex d)
+               |> Graph.show);
              vs
              |> List.iter (fun v ->
                     if not ([%derive.eq: reg] v d) then
                       conflict_graph :=
-                        Graph.connect (Graph.vertex v) (Graph.vertex d)
-                        |> Graph.overlay !conflict_graph
+                        !conflict_graph
+                        |> Graph.overlay
+                             (Graph.connect (Graph.vertex v) (Graph.vertex d))
                     else
                       conflict_graph :=
-                        Graph.vertex d |> Graph.overlay !conflict_graph)
+                        !conflict_graph |> Graph.overlay (Graph.vertex d))
          | Str _ | Ldr _ | Ret -> ());
   let g = !conflict_graph in
   if debug >= 1 then (
