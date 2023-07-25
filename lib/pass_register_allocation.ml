@@ -32,7 +32,7 @@ let rec run : debug:int -> asm -> Graph.t -> asm =
       prog
   in
   if debug >= 1 then (
-    print_endline "\nstage 7: register allocation";
+    print_endline "\n[pass] register allocation";
     print_endline (show_asm prog));
   prog
 

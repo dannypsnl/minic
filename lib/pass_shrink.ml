@@ -18,7 +18,7 @@ let rec run : debug:int -> expr -> expr =
  fun ~debug e ->
   let e' = go e in
   if debug >= 3 then (
-    print_endline "\npass: shrink";
+    print_endline "\n[pass] shrink";
     print_endline ([%derive.show: expr] e'));
   e'
 

@@ -21,7 +21,7 @@ let rec run : debug:int -> asm -> RegSet.t list =
  fun ~debug prog ->
   let live_sets = List.fold_right analyze_instr prog [ RegSet.empty ] in
   if debug >= 1 then (
-    print_endline "\nstage 5: liveness analysis";
+    print_endline "\n[pass] liveness analysis";
     print_liveset prog live_sets);
   live_sets
 

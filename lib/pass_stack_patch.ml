@@ -4,7 +4,7 @@ let rec run : debug:int -> asm -> asm =
  fun ~debug prog ->
   let prog = go prog in
   if debug >= 1 then (
-    print_endline "\nstage 8: patch stack operations";
+    print_endline "\n[pass] patch stack operations";
     print_endline (show_asm prog));
   prog
 

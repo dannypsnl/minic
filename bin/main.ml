@@ -8,18 +8,12 @@ let () =
   let filename = (Sys.get_argv ()).(1) in
   let e = load_conv_exn Single ~filename (fun e -> e) in
   if debug >= 3 then (
-    Stdio.print_endline "stage 0: s-expression";
+    Stdio.print_endline "[stage0] s-expression";
     Stdio.print_endline (Sexp.to_string e));
-  let e = e |> expr_from_sexp |> Minic.Pass_shrink.run ~debug in
-  if debug >= 3 then (
-    Stdio.print_endline "\nstage 1: to expr";
-    Stdio.print_endline ([%derive.show: expr] e));
-  let e =
-    e |> Minic.Pass_uniquify.run
-    |> Minic.Pass_remove_complex_operands.run ~debug
-  in
   let prog =
-    e
+    e |> expr_from_sexp |> Minic.Pass_uniquify.run
+    |> Minic.Pass_shrink.run ~debug
+    |> Minic.Pass_remove_complex_operands.run ~debug
     |> Minic.Pass_explicate_control.run ~debug
     |> Minic.Pass_select_instruction.run ~debug
   in

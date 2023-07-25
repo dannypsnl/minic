@@ -5,7 +5,7 @@ let rec run : debug:int -> expr -> rco_expr =
   temp_var_cnt := 1;
   let e = rco_expr e in
   if debug >= 2 then (
-    print_endline "\nstage 2: remove complex operands";
+    print_endline "\n[pass] remove complex operands";
     print_endline (show_rco_expr e));
   e
 
