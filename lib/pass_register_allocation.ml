@@ -95,7 +95,7 @@ and all_register : RegSet.t =
       `Reg "x6";
       `Reg "x7";
       `Reg "x8";
-      (* middle x9-x28 is safe to use *)
+      (* middle x9-x26 is safe to use *)
       `Reg "x9";
       `Reg "x10";
       `Reg "x11";
