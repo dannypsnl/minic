@@ -25,7 +25,10 @@ let () =
   in
   let live_sets = prog |> Minic.Pass_liveness_analysis.run ~debug in
   let conflict_graph = Minic.Pass_graph_inference.run ~debug prog live_sets in
-  let prog = Minic.Pass_register_allocation.run ~debug prog conflict_graph in
+  let prog =
+    Minic.Pass_register_allocation.run ~debug prog conflict_graph
+    |> Minic.Pass_stack_patch.run ~debug
+  in
   Stdio.print_endline "result:";
 
   let asm_file = Stdio.Out_channel.create "_build/output.s" in

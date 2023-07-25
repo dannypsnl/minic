@@ -28,7 +28,7 @@ let rec run : debug:int -> asm -> Graph.t -> asm =
         | Add (d, s1, s2) -> Add (drw d, srw s1, srw s2)
         | Sub (d, s1, s2) -> Sub (drw d, srw s1, srw s2)
         | Mov (d, s) -> Mov (drw d, srw s)
-        | Ret -> Ret)
+        | instr -> instr)
       prog
   in
   if debug >= 1 then (

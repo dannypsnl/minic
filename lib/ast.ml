@@ -33,6 +33,12 @@ type instruction =
   (* mov x0, x1 *)
   (* 表示從 x0 = x1 *)
   | Mov of dest * src
+  (* str x0, [sp, 8] *)
+  (* 表示把 x0 推進 sp+8 的位置 *)
+  | Str of reg * reg * int
+  (* ldr x0, [sp, 8] *)
+  (* 表示把 sp+8 的位置內容載入 x0 *)
+  | Ldr of reg * reg * int
   | Ret
 [@@deriving eq]
 
@@ -110,6 +116,12 @@ and show_instruction : instruction -> string = function
   | Sub (d, s1, s2) ->
       Format.sprintf "sub %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
   | Mov (d, s) -> Format.sprintf "mov %s, %s" (show_reg d) (show_src s)
+  | Str (d, s, shift) ->
+      Format.sprintf "str %s, %s" (show_reg d) (show_reg s)
+      ^ ", " ^ Int.to_string shift
+  | Ldr (d, s, shift) ->
+      Format.sprintf "ldr %s, %s" (show_reg d) (show_reg s)
+      ^ ", " ^ Int.to_string shift
   | Ret -> "ret"
 
 and show_reg : reg -> string = function

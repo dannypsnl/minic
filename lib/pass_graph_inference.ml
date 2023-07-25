@@ -9,31 +9,29 @@ let run : debug:int -> asm -> RegSet.t list -> Graph.t =
          let vs = RegSet.elements live_after in
          match instr with
          | Mov (d, s) ->
-             List.iter
-               (fun v ->
-                 if
-                   (not ([%derive.eq: reg] v d))
-                   && not ([%derive.eq: src] (Reg.to_src v) s)
-                 then
-                   conflict_graph :=
-                     Graph.connect (Graph.vertex v) (Graph.vertex d)
-                     |> Graph.overlay !conflict_graph
-                 else
-                   conflict_graph :=
-                     Graph.vertex d |> Graph.overlay !conflict_graph)
-               vs
+             vs
+             |> List.iter (fun v ->
+                    if
+                      (not ([%derive.eq: reg] v d))
+                      && not ([%derive.eq: src] (Reg.to_src v) s)
+                    then
+                      conflict_graph :=
+                        Graph.connect (Graph.vertex v) (Graph.vertex d)
+                        |> Graph.overlay !conflict_graph
+                    else
+                      conflict_graph :=
+                        Graph.vertex d |> Graph.overlay !conflict_graph)
          | Add (d, _, _) | Sub (d, _, _) ->
-             List.iter
-               (fun v ->
-                 if not ([%derive.eq: reg] v d) then
-                   conflict_graph :=
-                     Graph.connect (Graph.vertex v) (Graph.vertex d)
-                     |> Graph.overlay !conflict_graph
-                 else
-                   conflict_graph :=
-                     Graph.vertex d |> Graph.overlay !conflict_graph)
-               vs
-         | Ret -> ());
+             vs
+             |> List.iter (fun v ->
+                    if not ([%derive.eq: reg] v d) then
+                      conflict_graph :=
+                        Graph.connect (Graph.vertex v) (Graph.vertex d)
+                        |> Graph.overlay !conflict_graph
+                    else
+                      conflict_graph :=
+                        Graph.vertex d |> Graph.overlay !conflict_graph)
+         | Str _ | Ldr _ | Ret -> ());
   let g = !conflict_graph in
   if debug >= 2 then (
     print_endline "\nstage 6: conflict graph";
