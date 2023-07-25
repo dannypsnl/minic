@@ -22,6 +22,7 @@
  (depends
   ocaml
   dune
+  core
   ppx_deriving
   ppx_inline_test
   ppx_expect

@@ -68,8 +68,19 @@ let%test "graph basic connect" =
 
 let%test "graph connect two vertices at once" =
   let g =
-    Graph.vertex (`Var "a")
-    |> Graph.connect
-         (Graph.overlay (Graph.vertex (`Var "b")) (Graph.vertex (`Var "c")))
+    Graph.connect
+      (Graph.vertex (`Var "a"))
+      (Graph.overlay (Graph.vertex (`Var "b")) (Graph.vertex (`Var "c")))
   in
   g |> Graph.verticies |> List.length = 3 && g |> Graph.edges |> List.length = 2
+
+let%expect_test "connect details" =
+  let g =
+    Graph.connect
+      (Graph.overlay (Graph.vertex (`Var "a")) (Graph.vertex (`Var "b")))
+      (Graph.overlay (Graph.vertex (`Var "c")) (Graph.vertex (`Var "d")))
+  in
+  print_string (Graph.show g);
+  [%expect {|
+    { @a, @b, @c, @d }
+    @a -> @c @a -> @d @b -> @c @b -> @d |}]

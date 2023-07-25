@@ -3,4 +3,4 @@
  (name main)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.eq))
- (libraries minic parsexp parsexp_io))
+ (libraries minic parsexp_io))

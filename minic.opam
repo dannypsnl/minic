@@ -12,6 +12,7 @@ bug-reports: "https://github.com/dannypsnl/minic/issues"
 depends: [
   "ocaml"
   "dune" {>= "3.9"}
+  "core"
   "ppx_deriving"
   "ppx_inline_test"
   "ppx_expect"
