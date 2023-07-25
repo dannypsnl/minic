@@ -114,8 +114,7 @@ and all_register : RegSet.t =
       `Reg "x24";
       `Reg "x25";
       `Reg "x26";
-      `Reg "x27";
-      `Reg "x28";
+      (* `x27` and `x28` are taken for stack operations *)
       (* `x29` is frame pointer *)
       (* `x30` stores the return address of function *)
       (* `x31` is stack pointer, alias is `sp` *)
