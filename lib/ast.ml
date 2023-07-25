@@ -20,7 +20,8 @@ type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 type ctail = Return of cexpr | Seq of cstmt * ctail [@@deriving eq]
 and cstmt = Assign of string * cexpr [@@deriving eq]
 
-and cexpr = [ catom | `CUnary of op * catom | `CBinary of op * catom * catom ]
+and cexpr =
+  [ catom | `Not of catom | `Add of catom * catom | `Sub of catom * catom ]
 [@@deriving eq]
 
 type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
@@ -103,15 +104,13 @@ and show_cstmt : cstmt -> string = function
 and show_cexpr : cexpr -> string = function
   | `CInt i -> Int.to_string i
   | `CVar x -> x
-  | `CUnary (op, a) -> Format.sprintf "%s %s " (show_op op) (show_catom a)
-  | `CBinary (op, a, b) ->
-      Format.sprintf "%s %s %s" (show_catom a) (show_op op) (show_catom b)
+  | `Not a -> Format.sprintf "not %s " (show_catom a)
+  | `Add (a, b) -> Format.sprintf "%s + %s" (show_catom a) (show_catom b)
+  | `Sub (a, b) -> Format.sprintf "%s - %s" (show_catom a) (show_catom b)
 
 and show_catom : catom -> string = function
   | `CInt i -> Int.to_string i
   | `CVar x -> x
-
-and show_op : op -> string = function Add -> "+" | Sub -> "-" | Not -> "not"
 
 let rec show_asm : asm -> string =
  fun prog ->
