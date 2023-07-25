@@ -19,7 +19,9 @@ type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 
 type ctail = Return of cexpr | Seq of cstmt * ctail [@@deriving eq]
 and cstmt = Assign of string * cexpr [@@deriving eq]
-and cexpr = [ catom | `CPrim of op * catom * catom ] [@@deriving eq]
+
+and cexpr = [ catom | `CUnary of op * catom | `CBinary of op * catom * catom ]
+[@@deriving eq]
 
 type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
 
@@ -101,7 +103,8 @@ and show_cstmt : cstmt -> string = function
 and show_cexpr : cexpr -> string = function
   | `CInt i -> Int.to_string i
   | `CVar x -> x
-  | `CPrim (op, a, b) ->
+  | `CUnary (op, a) -> Format.sprintf "%s %s " (show_op op) (show_catom a)
+  | `CBinary (op, a, b) ->
       Format.sprintf "%s %s %s" (show_catom a) (show_op op) (show_catom b)
 
 and show_catom : catom -> string = function

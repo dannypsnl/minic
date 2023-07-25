@@ -21,9 +21,9 @@ and explicate_tail : expr -> ctail =
   | Int i -> Return (`CInt i)
   | Var x -> Return (`CVar x)
   | Let (x, t, body) -> explicate_assign t x (explicate_tail body)
-  | Prim (Not, [ _a ]) -> raise TODO
+  | Prim (op, [ a ]) -> Return (`CUnary (op, explicate_atom a))
   | Prim (op, [ a; b ]) ->
-      Return (`CPrim (op, explicate_atom a, explicate_atom b))
+      Return (`CBinary (op, explicate_atom a, explicate_atom b))
   | Prim (_, es) -> raise (ToManyArguments (List.length es))
 
 and explicate_assign : expr -> string -> ctail -> ctail =
@@ -36,9 +36,9 @@ and explicate_assign : expr -> string -> ctail -> ctail =
   | Let (x2, t, body) ->
       let body' = explicate_assign body x cont in
       explicate_assign t x2 body'
-  | Prim (Not, [ _a ]) -> raise TODO
+  | Prim (op, [ a ]) -> Seq (Assign (x, `CUnary (op, explicate_atom a)), cont)
   | Prim (op, [ a; b ]) ->
-      Seq (Assign (x, `CPrim (op, explicate_atom a, explicate_atom b)), cont)
+      Seq (Assign (x, `CBinary (op, explicate_atom a, explicate_atom b)), cont)
   | Prim (_, es) -> raise (ToManyArguments (List.length es))
 
 and explicate_atom : expr -> catom =

@@ -19,15 +19,17 @@ and compile_assign : cexpr -> dest -> asm =
   match expression with
   | `CInt i -> [ Mov (assign_to, `Imm i) ]
   | `CVar x -> [ Mov (assign_to, `Var x) ]
-  | `CPrim ((Add as op), e, `CVar x) | `CPrim (op, `CVar x, e) ->
+  | `CUnary (_op, _e) -> raise TODO
+  | `CBinary ((Add as op), e, `CVar x) | `CBinary (op, `CVar x, e) ->
       let c =
         match op with
         | Add -> fun (d, s1, s2) -> Add (d, s1, s2)
         | Sub -> fun (d, s1, s2) -> Sub (d, s1, s2)
-        | Not -> raise TODO
+        | _ -> raise TODO
       in
+
       [ c (assign_to, `Var x, compile_atom e) ]
-  | `CPrim (op, e1, e2) -> (
+  | `CBinary (op, e1, e2) -> (
       match op with
       | Add ->
           [
@@ -39,7 +41,7 @@ and compile_assign : cexpr -> dest -> asm =
             Mov (assign_to, compile_atom e1);
             Sub (assign_to, Reg.to_src assign_to, compile_atom e2);
           ]
-      | Not -> raise TODO)
+      | _ -> raise TODO)
 
 and compile_atom : catom -> src = function
   | `CInt i -> `Imm i
