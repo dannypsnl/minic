@@ -20,7 +20,7 @@ and rco_atom : expr -> atom * (string * rco_expr) list =
       let atoms, bb = List.split es' in
       let temp_binder = "tmp." ^ Int.to_string !temp_var_cnt in
       temp_var_cnt := !temp_var_cnt + 1;
-      (`Var temp_binder, (temp_binder, `RPrim (op, atoms)) :: List.concat bb)
+      (`Var temp_binder, (temp_binder, `Prim (op, atoms)) :: List.concat bb)
   | `Let (x, t, body) ->
       let atom_body, bindings = rco_atom body in
       (atom_body, (x, rco_expr t) :: bindings)
@@ -36,9 +36,9 @@ and rco_expr : expr -> rco_expr =
       let atoms, bb = List.split es' in
       let bindings = List.concat bb in
       List.fold_left
-        (fun body (x, e) -> `RLet (x, e, body))
-        (`RPrim (op, atoms))
+        (fun body (x, e) -> `Let (x, e, body))
+        (`Prim (op, atoms))
         bindings
-  | `Let (x, t, body) -> `RLet (x, rco_expr t, rco_expr body)
+  | `Let (x, t, body) -> `Let (x, rco_expr t, rco_expr body)
 
 and temp_var_cnt = ref 1

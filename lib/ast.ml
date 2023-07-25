@@ -9,7 +9,7 @@ type atom = [ `Int of int | `Bool of bool | `Var of string ]
 type op = Add | Sub | Not [@@deriving show, eq]
 
 type rco_expr =
-  [ atom | `RPrim of op * atom list | `RLet of string * rco_expr * rco_expr ]
+  [ atom | `Prim of op * atom list | `Let of string * rco_expr * rco_expr ]
 [@@deriving show, eq]
 
 type expr = [ atom | `Prim of op * expr list | `Let of string * expr * expr ]
