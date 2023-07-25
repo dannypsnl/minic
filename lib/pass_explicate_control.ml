@@ -1,6 +1,5 @@
 open Ast
 
-exception TODO
 exception InvalidTail of expr
 exception InvalidAtom of expr
 exception ToManyArguments of int
