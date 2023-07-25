@@ -3,17 +3,22 @@ module CharSet = Set.Make (Char)
 exception Unhandled_sexp of Base.Sexp.t
 exception InvalidCharInVariable of char
 
-type expr =
-  | Int of int
-  | Bool of bool
-  | Var of string
-  (* (+ 1 2 3) *)
-  | Prim of op * expr list
-  (* (let ([x t]) u) *)
-  | Let of string * expr * expr
+type atom = [ `Int of int | `Bool of bool | `Var of string ]
 [@@deriving show, eq]
 
-and op = Add | Sub | Not [@@deriving show, eq]
+type op = Add | Sub | Not [@@deriving show, eq]
+
+type expr = [ atom | `Prim of op * expr list | `Let of string * expr * expr ]
+[@@deriving show, eq]
+
+module Atom = struct
+  type t = atom
+
+  let to_expr = function
+    | `Int i -> `Int i
+    | `Bool b -> `Bool b
+    | `Var x -> `Var x
+end
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 
@@ -66,17 +71,17 @@ module RegSet = Set.Make (Reg)
 let rec expr_from_sexp : Base.Sexp.t -> expr =
  fun se ->
   match se with
-  | List (Atom "+" :: rest) -> Prim (Add, List.map expr_from_sexp rest)
-  | List (Atom "-" :: rest) -> Prim (Sub, List.map expr_from_sexp rest)
-  | List [ Atom "not"; t ] -> Prim (Not, [ expr_from_sexp t ])
+  | List (Atom "+" :: rest) -> `Prim (Add, List.map expr_from_sexp rest)
+  | List (Atom "-" :: rest) -> `Prim (Sub, List.map expr_from_sexp rest)
+  | List [ Atom "not"; t ] -> `Prim (Not, [ expr_from_sexp t ])
   | List [ Atom "let"; List [ List [ Atom x; t ] ]; u ] ->
-      Let (validate_varname x, expr_from_sexp t, expr_from_sexp u)
-  | Atom "#t" -> Bool true
-  | Atom "#f" -> Bool false
+      `Let (validate_varname x, expr_from_sexp t, expr_from_sexp u)
+  | Atom "#t" -> `Bool true
+  | Atom "#f" -> `Bool false
   | Atom x -> (
       match Base.Int.of_string_opt x with
-      | Some i -> Int i
-      | None -> Var (validate_varname x))
+      | Some i -> `Int i
+      | None -> `Var (validate_varname x))
   | List _ -> raise (Unhandled_sexp se)
 
 and validate_varname : string -> string = fun x -> String.map validate_char x
