@@ -10,7 +10,7 @@ let () =
   if debug >= 3 then (
     Stdio.print_endline "stage 0: s-expression";
     Stdio.print_endline (Sexp.to_string e));
-  let e = e |> expr_from_sexp in
+  let e = e |> expr_from_sexp |> Minic.Pass_shrink.run ~debug in
   if debug >= 3 then (
     Stdio.print_endline "\nstage 1: to expr";
     Stdio.print_endline ([%derive.show: expr] e));
