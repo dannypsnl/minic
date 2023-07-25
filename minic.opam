@@ -13,6 +13,8 @@ depends: [
   "ocaml"
   "dune" {>= "3.9"}
   "ppx_deriving"
+  "ppx_inline_test"
+  "ppx_expect"
   "parsexp"
   "parsexp_io"
   "odoc" {with-doc}
