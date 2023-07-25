@@ -1,6 +1,8 @@
 open Ast
 
 exception TODO
+exception NotUnary of op
+exception NotBinary of op
 
 let rec run : debug:int -> ctail -> asm =
  fun ~debug t ->
@@ -19,13 +21,17 @@ and compile_assign : cexpr -> dest -> asm =
   match expression with
   | `CInt i -> [ Mov (assign_to, `Imm i) ]
   | `CVar x -> [ Mov (assign_to, `Var x) ]
-  | `CUnary (_op, _e) -> raise TODO
+  | `CUnary (op, _e) -> (
+      match op with
+      (*  *)
+      | Not -> raise TODO
+      | op -> raise (NotUnary op) (* test *))
   | `CBinary ((Add as op), e, `CVar x) | `CBinary (op, `CVar x, e) ->
       let c =
         match op with
         | Add -> fun (d, s1, s2) -> Add (d, s1, s2)
         | Sub -> fun (d, s1, s2) -> Sub (d, s1, s2)
-        | _ -> raise TODO
+        | op -> raise (NotBinary op)
       in
 
       [ c (assign_to, `Var x, compile_atom e) ]
