@@ -12,8 +12,7 @@ let rec run : debug:int -> expr -> expr =
 and rco_atom : expr -> expr * (string * expr) list =
  fun e ->
   match e with
-  | Var x -> (Var x, [])
-  | Int i -> (Int i, [])
+  | Var _ | Int _ | Bool _ -> (e, [])
   | Prim (op, es) ->
       let es' = List.map rco_atom es in
       let atoms, bb = List.split es' in
@@ -27,7 +26,7 @@ and rco_atom : expr -> expr * (string * expr) list =
 and rco_expr : expr -> expr =
  fun e ->
   match e with
-  | Var _ | Int _ -> e
+  | Var _ | Int _ | Bool _ -> e
   | Prim (op, es) ->
       let es' = List.map rco_atom es in
       let atoms, bb = List.split es' in

@@ -5,6 +5,7 @@ exception InvalidCharInVariable of char
 
 type expr =
   | Int of int
+  | Bool of bool
   | Var of string
   (* (+ 1 2 3) *)
   | Prim of op * expr list
@@ -12,7 +13,7 @@ type expr =
   | Let of string * expr * expr
 [@@deriving show, eq]
 
-and op = Add | Sub [@@deriving show, eq]
+and op = Add | Sub | Not [@@deriving show, eq]
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 
@@ -65,8 +66,11 @@ let rec expr_from_sexp : Base.Sexp.t -> expr =
   match se with
   | List (Atom "+" :: rest) -> Prim (Add, List.map expr_from_sexp rest)
   | List (Atom "-" :: rest) -> Prim (Sub, List.map expr_from_sexp rest)
+  | List [ Atom "not"; t ] -> Prim (Not, [ expr_from_sexp t ])
   | List [ Atom "let"; List [ List [ Atom x; t ] ]; u ] ->
       Let (validate_varname x, expr_from_sexp t, expr_from_sexp u)
+  | Atom "#t" -> Bool true
+  | Atom "#f" -> Bool false
   | Atom x -> (
       match Base.Int.of_string_opt x with
       | Some i -> Int i
@@ -104,7 +108,7 @@ and show_catom : catom -> string = function
   | `CInt i -> Int.to_string i
   | `CVar x -> x
 
-and show_op : op -> string = function Add -> "+" | Sub -> "-"
+and show_op : op -> string = function Add -> "+" | Sub -> "-" | Not -> "not"
 
 let rec show_asm : asm -> string =
  fun prog ->

@@ -1,5 +1,7 @@
 open Ast
 
+exception TODO
+
 let rec run : debug:int -> ctail -> asm =
  fun ~debug t ->
   let prog = go t in
@@ -22,6 +24,7 @@ and compile_assign : cexpr -> dest -> asm =
         match op with
         | Add -> fun (d, s1, s2) -> Add (d, s1, s2)
         | Sub -> fun (d, s1, s2) -> Sub (d, s1, s2)
+        | Not -> raise TODO
       in
       [ c (assign_to, `Var x, compile_atom e) ]
   | `CPrim (op, e1, e2) -> (
@@ -35,7 +38,8 @@ and compile_assign : cexpr -> dest -> asm =
           [
             Mov (assign_to, compile_atom e1);
             Sub (assign_to, Reg.to_src assign_to, compile_atom e2);
-          ])
+          ]
+      | Not -> raise TODO)
 
 and compile_atom : catom -> src = function
   | `CInt i -> `Imm i

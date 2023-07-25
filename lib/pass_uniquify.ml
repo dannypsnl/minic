@@ -8,6 +8,7 @@ and go : (string * int) list -> expr -> expr =
  fun env e ->
   match e with
   | Int i -> Int i
+  | Bool b -> Bool b
   | Var x -> (
       match List.assoc_opt x env with
       | Some cnt -> Var (form_var x cnt)
