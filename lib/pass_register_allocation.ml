@@ -1,7 +1,7 @@
 open Ast
 open Graph
 
-exception FilterOut
+exception ShouldFilterOut
 
 module ColorM = Hashtbl.Make (String)
 
@@ -80,7 +80,7 @@ and coloring : vertex list -> reg ColorM.t -> unit =
       in
       ColorM.add colors x picked_color;
       coloring rest colors
-  | V { value = _; _ } :: _ -> raise FilterOut
+  | V { value = _; _ } :: _ -> raise ShouldFilterOut
 
 and all_register : RegSet.t =
   RegSet.of_list

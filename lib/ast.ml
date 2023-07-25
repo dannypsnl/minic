@@ -8,17 +8,12 @@ type atom = [ `Int of int | `Bool of bool | `Var of string ]
 
 type op = Add | Sub | Not [@@deriving show, eq]
 
-type expr = [ atom | `Prim of op * expr list | `Let of string * expr * expr ]
+type rco_expr =
+  [ atom | `RPrim of op * atom list | `RLet of string * rco_expr * rco_expr ]
 [@@deriving show, eq]
 
-module Atom = struct
-  type t = atom
-
-  let to_expr = function
-    | `Int i -> `Int i
-    | `Bool b -> `Bool b
-    | `Var x -> `Var x
-end
+type expr = [ atom | `Prim of op * expr list | `Let of string * expr * expr ]
+[@@deriving show, eq]
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 
