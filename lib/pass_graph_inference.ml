@@ -33,7 +33,7 @@ let run : debug:int -> asm -> RegSet.t list -> Graph.t =
                         Graph.vertex d |> Graph.overlay !conflict_graph)
          | Str _ | Ldr _ | Ret -> ());
   let g = !conflict_graph in
-  if debug >= 2 then (
+  if debug >= 1 then (
     print_endline "\n[pass] conflict graph";
     print_endline (Graph.show g));
   g

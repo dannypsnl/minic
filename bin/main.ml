@@ -4,7 +4,7 @@ open Minic.Ast
 
 let () =
   (* debug range: 0 ~ 3 *)
-  let debug = 3 in
+  let debug = 1 in
   let filename = (Sys.get_argv ()).(1) in
   let e = load_conv_exn Single ~filename (fun e -> e) in
   if debug >= 3 then (

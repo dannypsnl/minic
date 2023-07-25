@@ -31,7 +31,7 @@ let rec run : debug:int -> asm -> Graph.t -> asm =
         | instr -> instr)
       prog
   in
-  if debug >= 1 then (
+  if debug >= 2 then (
     print_endline "\n[pass] register allocation";
     print_endline (show_asm prog));
   prog
