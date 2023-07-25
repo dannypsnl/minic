@@ -17,11 +17,13 @@ and compile_assign : cexpr -> dest -> asm =
   match expression with
   | `CInt i -> [ Mov (assign_to, `Imm i) ]
   | `CVar x -> [ Mov (assign_to, `Var x) ]
-  | `CPrim (Add, e, `CVar x) -> [ Add (assign_to, `Var x, compile_atom e) ]
-  | `CPrim (op, `CVar x, e) -> (
-      match op with
-      | Add -> [ Add (assign_to, `Var x, compile_atom e) ]
-      | Sub -> [ Sub (assign_to, `Var x, compile_atom e) ])
+  | `CPrim ((Add as op), e, `CVar x) | `CPrim (op, `CVar x, e) ->
+      let c =
+        match op with
+        | Add -> fun (d, s1, s2) -> Add (d, s1, s2)
+        | Sub -> fun (d, s1, s2) -> Sub (d, s1, s2)
+      in
+      [ c (assign_to, `Var x, compile_atom e) ]
   | `CPrim (op, e1, e2) -> (
       match op with
       | Add ->
