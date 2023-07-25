@@ -46,14 +46,10 @@ let () =
      }\n";
   Stdio.Out_channel.close c_file;
   let status =
-    Stdlib.Sys.command
-      "/opt/homebrew/opt/llvm/bin/clang -c _build/output.s -o _build/output.o"
+    Stdlib.Sys.command "clang -c _build/output.s -o _build/output.o"
   in
   if status <> 0 then Stdlib.exit 1;
-  let status =
-    Stdlib.Sys.command
-      "/opt/homebrew/opt/llvm/bin/clang _build/main.c _build/output.o"
-  in
+  let status = Stdlib.Sys.command "clang _build/main.c _build/output.o" in
   if status <> 0 then Stdlib.exit 1;
   let status = Stdlib.Sys.command "./a.out" in
   if status <> 0 then Stdlib.exit 1;

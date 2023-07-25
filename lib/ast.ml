@@ -117,11 +117,9 @@ and show_instruction : instruction -> string = function
       Format.sprintf "sub %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
   | Mov (d, s) -> Format.sprintf "mov %s, %s" (show_reg d) (show_src s)
   | Str (d, s, shift) ->
-      Format.sprintf "str %s, %s" (show_reg d) (show_reg s)
-      ^ ", " ^ Int.to_string shift
+      Format.sprintf "str %s, [%s, %d]" (show_reg d) (show_reg s) shift
   | Ldr (d, s, shift) ->
-      Format.sprintf "ldr %s, %s" (show_reg d) (show_reg s)
-      ^ ", " ^ Int.to_string shift
+      Format.sprintf "ldr %s, [%s, %d]" (show_reg d) (show_reg s) shift
   | Ret -> "ret"
 
 and show_reg : reg -> string = function
