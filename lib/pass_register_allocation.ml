@@ -11,9 +11,9 @@ let rec run : debug:int -> asm -> Graph.t -> asm =
   let working_set : vertex list =
     working_set
     (* filter out register, they should not be rewritten by this pass *)
-    |> List.filter (fun (V { value = v; _ }) ->
+    |> List.filter (fun { value = v; _ } ->
            match v with `Var _ -> true | _ -> false)
-    |> List.sort (fun (V { adjacency = s; _ }) (V { adjacency = s2; _ }) ->
+    |> List.sort (fun { adjacency = s; _ } { adjacency = s2; _ } ->
            let a = RegSet.elements s |> List.length in
            let b = RegSet.elements s2 |> List.length in
            if a = b then 0 else if a < b then -1 else 1)
@@ -50,7 +50,7 @@ and coloring : vertex list -> reg ColorM.t -> unit =
  fun ws colors ->
   match ws with
   | [] -> ()
-  | V { value = `Var x; adjacency = vs } :: rest ->
+  | { value = `Var x; adjacency = vs } :: rest ->
       let ad =
         RegSet.map
           (function
@@ -80,7 +80,7 @@ and coloring : vertex list -> reg ColorM.t -> unit =
       in
       ColorM.add colors x picked_color;
       coloring rest colors
-  | V { value = _; _ } :: _ -> raise ShouldFilterOut
+  | { value = _; _ } :: _ -> raise ShouldFilterOut
 
 and all_register : RegSet.t =
   RegSet.of_list

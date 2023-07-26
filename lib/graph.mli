@@ -1,10 +1,9 @@
 open Ast
 
-type vertex =
-  | V of {
-      value : reg; (* each register is a vertex of conflict graph *)
-      adjacency : RegSet.t; (* connected register *)
-    }
+type vertex = {
+  value : reg; (* each register is a vertex of conflict graph *)
+  adjacency : RegSet.t; (* connected register *)
+}
 
 module Vertex : sig
   type t

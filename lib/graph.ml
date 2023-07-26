@@ -1,12 +1,12 @@
 open Ast
 
-type vertex = V of { value : reg; adjacency : RegSet.t }
+type vertex = { value : reg; adjacency : RegSet.t }
 
 module Vertex = struct
   type t = vertex
 
-  let compare (V { value = a; _ }) (V { value = b; _ }) = [%derive.ord: reg] a b
-  let show (V { value = reg; _ }) = show_reg reg
+  let compare { value = a; _ } { value = b; _ } = [%derive.ord: reg] a b
+  let show { value = reg; _ } = show_reg reg
 end
 
 module VertexSet = Set.Make (Vertex)
@@ -17,23 +17,20 @@ module Graph = struct
   type t = graph
 
   let empty : t = VertexSet.empty
-
-  let vertex reg =
-    VertexSet.singleton (V { value = reg; adjacency = RegSet.empty })
-
+  let vertex reg = VertexSet.singleton { value = reg; adjacency = RegSet.empty }
   let overlay : t -> t -> t = fun g1 g2 -> VertexSet.union g1 g2
 
   let connect : t -> t -> t =
    fun g1 g2 ->
     VertexSet.map
       (function
-        | V { value = v; adjacency = s } ->
+        | { value = v; adjacency = s } ->
             let g2_vertcies =
               VertexSet.to_seq g2 |> List.of_seq
-              |> List.map (function V { value = r; _ } -> r)
+              |> List.map (function { value = r; _ } -> r)
               |> RegSet.of_list
             in
-            V { value = v; adjacency = s |> RegSet.union g2_vertcies })
+            { value = v; adjacency = s |> RegSet.union g2_vertcies })
       g1
     |> VertexSet.union g2
 
@@ -42,7 +39,7 @@ module Graph = struct
   let edges : t -> (Reg.t * Reg.t) list =
    fun g ->
     VertexSet.to_seq g
-    |> Seq.map (function V { value = v; adjacency = s } ->
+    |> Seq.map (function { value = v; adjacency = s } ->
            RegSet.to_seq s |> Seq.map (fun r -> (v, r)))
     |> Seq.concat |> List.of_seq
 
@@ -51,7 +48,7 @@ module Graph = struct
     let vs = VertexSet.to_seq g |> List.of_seq in
     let paths =
       vs
-      |> List.map (fun (V { value = from; adjacency = s }) ->
+      |> List.map (fun { value = from; adjacency = s } ->
              RegSet.to_seq s |> List.of_seq
              |> List.map (fun to_ ->
                     Printf.sprintf "%s -> %s" (show_reg from) (show_reg to_)))
