@@ -23,10 +23,6 @@ let run : debug:int -> asm -> RegSet.t list -> Graph.t =
                       conflict_graph :=
                         !conflict_graph |> Graph.overlay (Graph.vertex d))
          | Add (d, _, _) | Sub (d, _, _) ->
-             print_endline "live set dododo";
-             print_endline
-               (Graph.connect (Graph.vertex (`Reg "test")) (Graph.vertex d)
-               |> Graph.show);
              vs
              |> List.iter (fun v ->
                     if not ([%derive.eq: reg] v d) then
