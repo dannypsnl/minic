@@ -43,9 +43,10 @@ and live_before : instruction -> RegSet.t -> RegSet.t =
 and read_variables : instruction -> RegSet.t = function
   | Add (_, r1, r2) -> convert [ r1; r2 ]
   | Sub (_, r1, r2) -> convert [ r1; r2 ]
+  | Xor (_, r1, r2) -> convert [ r1; r2 ]
   | Mov (_, r) -> convert [ r ]
   | Str (s, _, _) -> RegSet.singleton s
-  | Ldr _ -> RegSet.singleton (`Reg "x31")
+  | Ldr _ -> RegSet.singleton (`Reg "sp")
   | Ret -> RegSet.singleton (`Reg "x0")
 
 and convert : src list -> RegSet.t = function
@@ -57,7 +58,8 @@ and convert : src list -> RegSet.t = function
 and written_locations : instruction -> RegSet.t = function
   | Add (d, _, _) -> RegSet.singleton d
   | Sub (d, _, _) -> RegSet.singleton d
+  | Xor (d, _, _) -> RegSet.singleton d
   | Mov (d, _) -> RegSet.singleton d
-  | Str _ -> RegSet.singleton (`Reg "x31")
+  | Str _ -> RegSet.singleton (`Reg "sp")
   | Ldr (d, _, _) -> RegSet.singleton d
   | Ret -> RegSet.empty

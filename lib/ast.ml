@@ -34,6 +34,9 @@ type instruction =
   (* sub x0, x1, x2 *)
   (* 表示 x0 = x1 - x2 *)
   | Sub of dest * src * src
+  (* eor x0, x1, x2 *)
+  (* 表示 x0 = x1 xor x2 *)
+  | Xor of dest * src * src
   (* mov x0, x1 *)
   (* 表示從 x0 = x1 *)
   | Mov of dest * src
@@ -121,6 +124,8 @@ and show_instruction : instruction -> string = function
       Format.sprintf "add %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
   | Sub (d, s1, s2) ->
       Format.sprintf "sub %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
+  | Xor (d, s1, s2) ->
+      Format.sprintf "eor %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
   | Mov (d, s) -> Format.sprintf "mov %s, %s" (show_reg d) (show_src s)
   | Str (d, s, shift) ->
       Format.sprintf "str %s, [%s, %d]" (show_reg d) (show_reg s) shift

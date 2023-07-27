@@ -22,7 +22,7 @@ let run : debug:int -> asm -> RegSet.t list -> Graph.t =
                     else
                       conflict_graph :=
                         !conflict_graph |> Graph.overlay (Graph.vertex d))
-         | Add (d, _, _) | Sub (d, _, _) ->
+         | Add (d, _, _) | Sub (d, _, _) | Xor (d, _, _) ->
              vs
              |> List.iter (fun v ->
                     if not ([%derive.eq: reg] v d) then

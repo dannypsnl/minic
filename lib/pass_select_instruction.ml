@@ -19,7 +19,11 @@ and compile_assign : cexpr -> dest -> asm =
   match expression with
   | `CInt i -> [ Mov (assign_to, `Imm i) ]
   | `CVar x -> [ Mov (assign_to, `Var x) ]
-  | `Not _e -> raise TODO
+  | `Not e ->
+      [
+        Mov (assign_to, compile_atom e);
+        Xor (assign_to, Reg.to_src assign_to, `Imm 1);
+      ]
   | `Add (e, `CVar x) | `Add (`CVar x, e) ->
       [ Add (assign_to, `Var x, compile_atom e) ]
   | `Sub (`CVar x, e) -> [ Sub (assign_to, `Var x, compile_atom e) ]

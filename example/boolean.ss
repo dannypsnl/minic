@@ -1,2 +1,2 @@
 (let ((x #t))
-  (not x))
+  (not (not x)))
