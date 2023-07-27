@@ -1,7 +1,5 @@
 open Ast
 
-exception TODO
-
 let rec run : debug:int -> ctail -> asm =
  fun ~debug t ->
   let prog = go t in
@@ -24,19 +22,22 @@ and compile_assign : cexpr -> dest -> asm =
         Mov (assign_to, compile_atom e);
         Xor (assign_to, Reg.to_src assign_to, `Imm 1);
       ]
-  | `Add (e, `CVar x) | `Add (`CVar x, e) ->
-      [ Add (assign_to, `Var x, compile_atom e) ]
-  | `Sub (`CVar x, e) -> [ Sub (assign_to, `Var x, compile_atom e) ]
-  | `Add (e1, e2) ->
-      [
-        Mov (assign_to, compile_atom e1);
-        Add (assign_to, Reg.to_src assign_to, compile_atom e2);
-      ]
-  | `Sub (e1, e2) ->
-      [
-        Mov (assign_to, compile_atom e1);
-        Sub (assign_to, Reg.to_src assign_to, compile_atom e2);
-      ]
+  | `Add (e, `CVar x) | `Add (`CVar x, e) -> single_expr add assign_to x e
+  | `Sub (`CVar x, e) -> single_expr sub assign_to x e
+  | `Add (e1, e2) -> two_expr add assign_to e1 e2
+  | `Sub (e1, e2) -> two_expr sub assign_to e1 e2
+
+and single_expr :
+    (reg * src * src -> instruction) -> dest -> string -> catom -> asm =
+ fun c assign_to x e -> [ c (assign_to, `Var x, compile_atom e) ]
+
+and two_expr : (reg * src * src -> instruction) -> dest -> catom -> catom -> asm
+    =
+ fun c assign_to e1 e2 ->
+  [
+    Mov (assign_to, compile_atom e1);
+    c (assign_to, Reg.to_src assign_to, compile_atom e2);
+  ]
 
 and compile_atom : catom -> src = function
   | `CInt i -> `Imm i

@@ -66,6 +66,10 @@ end
 
 module RegSet = Set.Make (Reg)
 
+let add (d, s1, s2) = Add (d, s1, s2)
+and sub (d, s1, s2) = Sub (d, s1, s2)
+and xor (d, s1, s2) = Xor (d, s1, s2)
+
 (* below are helper functions *)
 let rec expr_from_sexp : Base.Sexp.t -> expr =
  fun se ->
