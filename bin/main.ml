@@ -21,6 +21,7 @@ let () =
   let conflict_graph = Minic.Pass_graph_inference.run ~debug prog live_sets in
   let prog =
     Minic.Pass_register_allocation.run ~debug prog conflict_graph
+    |> Minic.Pass_move_biasing.run ~debug
     |> Minic.Pass_stack_patch.run ~debug
   in
   Stdio.print_endline "result:";
