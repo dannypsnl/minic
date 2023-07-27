@@ -15,30 +15,26 @@ and rco_atom : expr -> atom * (string * rco_expr) list =
   | `Var x -> (`Var x, [])
   | `Int i -> (`Int i, [])
   | `Bool b -> (`Bool b, [])
-  | `Prim (op, es) ->
-      let es' = List.map rco_atom es in
-      let atoms, bb = List.split es' in
+  | e ->
       let temp_binder = "tmp." ^ Int.to_string !temp_var_cnt in
       temp_var_cnt := !temp_var_cnt + 1;
-      (`Var temp_binder, (temp_binder, `Prim (op, atoms)) :: List.concat bb)
-  | `Let (x, t, body) ->
-      let atom_body, bindings = rco_atom body in
-      (atom_body, (x, rco_expr t) :: bindings)
+      let e' = rco_expr e in
+      (`Var temp_binder, [ (temp_binder, e') ])
 
 and rco_expr : expr -> rco_expr =
  fun e ->
   match e with
-  | `Var x -> `Var x
-  | `Int i -> `Int i
-  | `Bool b -> `Bool b
   | `Prim (op, es) ->
       let es' = List.map rco_atom es in
       let atoms, bb = List.split es' in
       let bindings = List.concat bb in
-      List.fold_left
-        (fun body (x, e) -> `Let (x, e, body))
-        (`Prim (op, atoms))
-        bindings
+      bindings
+      |> List.fold_left
+           (fun body (x, e) -> `Let (x, e, body))
+           (`Prim (op, atoms))
   | `Let (x, t, body) -> `Let (x, rco_expr t, rco_expr body)
+  | `Var x -> `Var x
+  | `Int i -> `Int i
+  | `Bool b -> `Bool b
 
 and temp_var_cnt = ref 1
