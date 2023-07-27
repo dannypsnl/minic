@@ -6,7 +6,7 @@ exception InvalidCharInVariable of char
 type atom = [ `Int of int | `Bool of bool | `Var of string ]
 [@@deriving show, eq]
 
-type op = Add | Sub | Not [@@deriving show, eq]
+type op = Add | Sub | Not | And | Or [@@deriving show, eq]
 
 type rco_expr =
   [ atom | `Prim of op * atom list | `Let of string * rco_expr * rco_expr ]
@@ -74,9 +74,11 @@ and xor (d, s1, s2) = Xor (d, s1, s2)
 let rec expr_from_sexp : Base.Sexp.t -> expr =
  fun se ->
   match se with
-  | List (Atom "+" :: rest) -> `Prim (Add, List.map expr_from_sexp rest)
-  | List (Atom "-" :: rest) -> `Prim (Sub, List.map expr_from_sexp rest)
+  | List (Atom "+" :: rest) -> `Prim (Add, rest |> List.map expr_from_sexp)
+  | List (Atom "-" :: rest) -> `Prim (Sub, rest |> List.map expr_from_sexp)
   | List [ Atom "not"; t ] -> `Prim (Not, [ expr_from_sexp t ])
+  | List (Atom "and" :: rest) -> `Prim (And, rest |> List.map expr_from_sexp)
+  | List (Atom "or" :: rest) -> `Prim (Or, rest |> List.map expr_from_sexp)
   | List [ Atom "let"; List [ List [ Atom x; t ] ]; u ] ->
       `Let (validate_varname x, expr_from_sexp t, expr_from_sexp u)
   | Atom "#t" -> `Bool true
