@@ -37,5 +37,5 @@ let run : debug:int -> asm -> RegSet.t list -> Graph.t =
   let g = !conflict_graph in
   if debug >= 1 then (
     print_endline "\n[pass] conflict graph";
-    print_endline (Graph.show g));
+    print_string (Graph.show g));
   g

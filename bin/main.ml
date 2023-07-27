@@ -24,7 +24,7 @@ let () =
     |> Minic.Pass_move_biasing.run ~debug
     |> Minic.Pass_stack_patch.run ~debug
   in
-  Stdio.print_endline "result:";
+  Stdio.print_endline "\nresult:";
 
   let asm_file = Stdio.Out_channel.create "_build/output.s" in
   Stdio.Out_channel.output_string asm_file
