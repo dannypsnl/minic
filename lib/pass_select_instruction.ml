@@ -26,6 +26,8 @@ and compile_assign : cexpr -> dest -> asm =
   | `Sub (`CVar x, e) -> single_expr sub assign_to x e
   | `Add (e1, e2) -> two_expr add assign_to e1 e2
   | `Sub (e1, e2) -> two_expr sub assign_to e1 e2
+  | `And (e1, e2) -> two_expr iand assign_to e1 e2
+  | `Or (e1, e2) -> two_expr ior assign_to e1 e2
 
 and single_expr :
     (reg * src * src -> instruction) -> dest -> string -> catom -> asm =

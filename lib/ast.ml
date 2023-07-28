@@ -21,7 +21,12 @@ type ctail = Return of cexpr | Seq of cstmt * ctail [@@deriving eq]
 and cstmt = Assign of string * cexpr [@@deriving eq]
 
 and cexpr =
-  [ catom | `Not of catom | `Add of catom * catom | `Sub of catom * catom ]
+  [ catom
+  | `Not of catom
+  | `Add of catom * catom
+  | `Sub of catom * catom
+  | `And of catom * catom
+  | `Or of catom * catom ]
 [@@deriving eq]
 
 type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
@@ -37,6 +42,8 @@ type instruction =
   (* eor x0, x1, x2 *)
   (* 表示 x0 = x1 xor x2 *)
   | Xor of dest * src * src
+  | Or of dest * src * src
+  | And of dest * src * src
   (* mov x0, x1 *)
   (* 表示從 x0 = x1 *)
   | Mov of dest * src
@@ -69,6 +76,8 @@ module RegSet = Set.Make (Reg)
 let add (d, s1, s2) = Add (d, s1, s2)
 and sub (d, s1, s2) = Sub (d, s1, s2)
 and xor (d, s1, s2) = Xor (d, s1, s2)
+and iand (d, s1, s2) = And (d, s1, s2)
+and ior (d, s1, s2) = Or (d, s1, s2)
 
 (* below are helper functions *)
 let rec expr_from_sexp : Base.Sexp.t -> expr =
@@ -116,6 +125,8 @@ and show_cexpr : cexpr -> string = function
   | `Not a -> Format.sprintf "not %s " (show_catom a)
   | `Add (a, b) -> Format.sprintf "%s + %s" (show_catom a) (show_catom b)
   | `Sub (a, b) -> Format.sprintf "%s - %s" (show_catom a) (show_catom b)
+  | `And (a, b) -> Format.sprintf "%s and %s" (show_catom a) (show_catom b)
+  | `Or (a, b) -> Format.sprintf "%s or %s" (show_catom a) (show_catom b)
 
 and show_catom : catom -> string = function
   | `CInt i -> Int.to_string i
@@ -132,6 +143,10 @@ and show_instruction : instruction -> string = function
       Format.sprintf "sub %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
   | Xor (d, s1, s2) ->
       Format.sprintf "eor %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
+  | Or (d, s1, s2) ->
+      Format.sprintf "orr %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
+  | And (d, s1, s2) ->
+      Format.sprintf "and %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
   | Mov (d, s) -> Format.sprintf "mov %s, %s" (show_reg d) (show_src s)
   | Str (d, s, shift) ->
       Format.sprintf "str %s, [%s, %d]" (show_reg d) (show_reg s) shift

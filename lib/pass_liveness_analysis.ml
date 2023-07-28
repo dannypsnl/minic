@@ -41,9 +41,12 @@ and live_before : instruction -> RegSet.t -> RegSet.t =
   |> RegSet.union (read_variables instr)
 
 and read_variables : instruction -> RegSet.t = function
-  | Add (_, r1, r2) -> convert [ r1; r2 ]
-  | Sub (_, r1, r2) -> convert [ r1; r2 ]
-  | Xor (_, r1, r2) -> convert [ r1; r2 ]
+  | Add (_, r1, r2)
+  | Sub (_, r1, r2)
+  | Xor (_, r1, r2)
+  | Or (_, r1, r2)
+  | And (_, r1, r2) ->
+      convert [ r1; r2 ]
   | Mov (_, r) -> convert [ r ]
   | Str (s, _, _) -> RegSet.singleton s
   | Ldr _ -> RegSet.singleton (`Reg "sp")
@@ -56,10 +59,13 @@ and convert : src list -> RegSet.t = function
   | _ :: srcs -> convert srcs
 
 and written_locations : instruction -> RegSet.t = function
-  | Add (d, _, _) -> RegSet.singleton d
-  | Sub (d, _, _) -> RegSet.singleton d
-  | Xor (d, _, _) -> RegSet.singleton d
-  | Mov (d, _) -> RegSet.singleton d
+  | Add (d, _, _)
+  | Sub (d, _, _)
+  | Xor (d, _, _)
+  | Or (d, _, _)
+  | And (d, _, _)
+  | Mov (d, _) ->
+      RegSet.singleton d
   | Str _ -> RegSet.singleton (`Reg "sp")
   | Ldr (d, _, _) -> RegSet.singleton d
   | Ret -> RegSet.empty

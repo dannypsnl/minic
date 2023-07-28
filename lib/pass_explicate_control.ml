@@ -21,6 +21,8 @@ and explicate_tail : rco_expr -> ctail =
   | `Prim (Not, [ a ]) -> Return (`Not (explicate_atom a))
   | `Prim (Add, [ a; b ]) -> Return (`Add (explicate_atom a, explicate_atom b))
   | `Prim (Sub, [ a; b ]) -> Return (`Sub (explicate_atom a, explicate_atom b))
+  | `Prim (And, [ a; b ]) -> Return (`And (explicate_atom a, explicate_atom b))
+  | `Prim (Or, [ a; b ]) -> Return (`Or (explicate_atom a, explicate_atom b))
   | `Prim (_, es) -> raise (ToManyArguments (List.length es))
 
 and explicate_assign : rco_expr -> string -> ctail -> ctail =
@@ -38,6 +40,10 @@ and explicate_assign : rco_expr -> string -> ctail -> ctail =
       Seq (Assign (x, `Add (explicate_atom a, explicate_atom b)), cont)
   | `Prim (Sub, [ a; b ]) ->
       Seq (Assign (x, `Sub (explicate_atom a, explicate_atom b)), cont)
+  | `Prim (And, [ a; b ]) ->
+      Seq (Assign (x, `And (explicate_atom a, explicate_atom b)), cont)
+  | `Prim (Or, [ a; b ]) ->
+      Seq (Assign (x, `Or (explicate_atom a, explicate_atom b)), cont)
   | `Prim (_, es) -> raise (ToManyArguments (List.length es))
 
 and explicate_atom : atom -> catom =

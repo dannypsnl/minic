@@ -33,6 +33,17 @@ and go : expr -> expr = function
   | `Prim (Add, es) ->
       let es1, es2 = split es in
       `Prim (Add, [ `Prim (Add, es1) |> go; `Prim (Add, es2) |> go ])
+  | `Prim (And, [ a; b ]) -> `Prim (And, [ go a; go b ])
+  | `Prim (And, [ a; b; c ]) ->
+      `Prim (And, [ go a; `Prim (And, [ go b; go c ]) ])
+  | `Prim (And, es) ->
+      let es1, es2 = split es in
+      `Prim (And, [ `Prim (And, es1) |> go; `Prim (And, es2) |> go ])
+  | `Prim (Or, [ a; b ]) -> `Prim (Or, [ go a; go b ])
+  | `Prim (Or, [ a; b; c ]) -> `Prim (Or, [ go a; `Prim (Or, [ go b; go c ]) ])
+  | `Prim (Or, es) ->
+      let es1, es2 = split es in
+      `Prim (Or, [ `Prim (Or, es1) |> go; `Prim (Or, es2) |> go ])
   | `Prim (Sub, [ a; b ]) -> `Prim (Sub, [ go a; go b ])
   | `Prim (Sub, a :: b :: es) ->
       let a' = go a in
