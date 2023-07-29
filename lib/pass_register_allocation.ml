@@ -89,7 +89,7 @@ and all_register : RegSet.t =
   RegSet.of_list
     [
       (* function call might take x0-x8 *)
-      `Reg "x0";
+      (* `Reg "x0"; *)
       `Reg "x1";
       `Reg "x2";
       `Reg "x3";
