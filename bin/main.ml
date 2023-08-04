@@ -20,6 +20,16 @@ let build_c_driver ~cwd =
      \treturn 0;\n\
      }\n"
 
+let compile_binary ~proc_mgr ~cwd prog =
+  build_assembly ~cwd prog;
+  build_c_driver ~cwd;
+  Eio.Process.run proc_mgr
+    [ "clang"; "-c"; "_build/output.s"; "-o"; "_build/output.o" ];
+  Eio.Process.run proc_mgr [ "clang"; "_build/main.c"; "_build/output.o" ];
+  let output = Eio.Process.parse_out proc_mgr Eio.Buf_read.line [ "./a.out" ] in
+  Eio.Process.run proc_mgr [ "rm"; "./a.out" ];
+  output
+
 let () =
   Eio_main.run @@ fun env ->
   (* debug range: 0 ~ 3 *)
@@ -42,15 +52,9 @@ let () =
     |> Minic.Pass_move_biasing.run ~debug
     |> Minic.Pass_stack_patch.run ~debug
   in
-
-  let cwd = Eio.Stdenv.cwd env in
-  build_assembly ~cwd prog;
-  build_c_driver ~cwd;
-
-  let proc_mgr = Eio.Stdenv.process_mgr env in
-  Eio.Process.run proc_mgr
-    [ "clang"; "-c"; "_build/output.s"; "-o"; "_build/output.o" ];
-  Eio.Process.run proc_mgr [ "clang"; "_build/main.c"; "_build/output.o" ];
-  let output = Eio.Process.parse_out proc_mgr Eio.Buf_read.line [ "./a.out" ] in
-  traceln "result: %s" output;
-  Eio.Process.run proc_mgr [ "rm"; "./a.out" ]
+  let output =
+    compile_binary
+      ~proc_mgr:(Eio.Stdenv.process_mgr env)
+      ~cwd:(Eio.Stdenv.cwd env) prog
+  in
+  traceln "result: %s" output
