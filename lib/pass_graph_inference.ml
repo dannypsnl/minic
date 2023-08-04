@@ -1,5 +1,6 @@
 open Ast
 open Graph
+open Eio
 
 let run : debug:int -> asm -> RegSet.t list -> Graph.t =
  fun ~debug prog live_sets ->
@@ -39,7 +40,5 @@ let run : debug:int -> asm -> RegSet.t list -> Graph.t =
                         !conflict_graph |> Graph.overlay (Graph.vertex d))
          | Str _ | Ldr _ | Ret -> ());
   let g = !conflict_graph in
-  if debug >= 1 then (
-    print_endline "\n[pass] conflict graph";
-    print_string (Graph.show g));
+  if debug >= 1 then traceln "[pass] conflict graph\n%s" (Graph.show g);
   g

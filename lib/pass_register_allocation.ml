@@ -1,5 +1,6 @@
 open Ast
 open Graph
+open Eio
 
 exception ShouldFilterOut
 
@@ -34,9 +35,7 @@ let rec run : debug:int -> asm -> Graph.t -> asm =
         | instr -> instr)
       prog
   in
-  if debug >= 2 then (
-    print_endline "\n[pass] register allocation";
-    print_endline (show_asm prog));
+  if debug >= 2 then traceln "[pass] register allocation\n%s" (show_asm prog);
   prog
 
 and subst_dest : reg ColorM.t -> dest -> dest =

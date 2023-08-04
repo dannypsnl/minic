@@ -1,11 +1,10 @@
 open Ast
+open Eio
 
 let rec run : debug:int -> ctail -> asm =
  fun ~debug t ->
   let prog = go t in
-  if debug >= 2 then (
-    print_endline "\n[pass] select instructions";
-    print_endline (show_asm prog));
+  if debug >= 2 then traceln "[pass] select instructions\n%s" (show_asm prog);
   prog
 
 and go : ctail -> asm = function

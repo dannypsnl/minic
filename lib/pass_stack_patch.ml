@@ -1,11 +1,10 @@
 open Ast
+open Eio
 
 let rec run : debug:int -> asm -> asm =
  fun ~debug prog ->
   let prog = prog |> List.map patch_instruction |> List.concat in
-  if debug >= 1 then (
-    print_endline "\n[pass] patch stack operations";
-    print_endline (show_asm prog));
+  if debug >= 1 then traceln "[pass] patch stack operations\n%s" (show_asm prog);
   prog
 
 and patch_instruction : instruction -> asm = function

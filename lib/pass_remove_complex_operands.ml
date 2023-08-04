@@ -1,12 +1,12 @@
 open Ast
+open Eio
 
 let rec run : debug:int -> expr -> rco_expr =
  fun ~debug e ->
   temp_var_cnt := 1;
   let e = rco_expr e in
-  if debug >= 2 then (
-    print_endline "\n[pass] remove complex operands";
-    print_endline (show_rco_expr e));
+  if debug >= 2 then
+    traceln "[pass] remove complex operands\n%s" (show_rco_expr e);
   e
 
 and rco_atom : expr -> atom * (string * rco_expr) list =

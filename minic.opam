@@ -13,6 +13,8 @@ depends: [
   "ocaml"
   "dune" {>= "3.9"}
   "core"
+  "eio"
+  "eio_main"
   "ppx_deriving"
   "ppx_inline_test"
   "ppx_expect"

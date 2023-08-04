@@ -1,13 +1,12 @@
 open Ast
+open Eio
 
 exception ToManyArguments of int
 
 let rec run : debug:int -> rco_expr -> ctail =
  fun ~debug e ->
   let r = explicate_tail e in
-  if debug >= 2 then (
-    print_endline "\n[pass] explicate control";
-    print_endline (show_ctail r));
+  if debug >= 2 then traceln "[pass] explicate control\n%s" (show_ctail r);
   r
 
 and explicate_tail : rco_expr -> ctail =

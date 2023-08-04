@@ -1,4 +1,5 @@
 open Ast
+open Eio
 
 exception BadExpr of expr
 
@@ -17,9 +18,7 @@ and go : int -> 'a list -> 'a list -> 'a list * 'a list =
 let rec run : debug:int -> expr -> expr =
  fun ~debug e ->
   let e' = go e in
-  if debug >= 3 then (
-    print_endline "\n[pass] shrink";
-    print_endline ([%derive.show: expr] e'));
+  if debug >= 3 then traceln "[pass] shrink\n%s" ([%derive.show: expr] e');
   e'
 
 and go : expr -> expr = function

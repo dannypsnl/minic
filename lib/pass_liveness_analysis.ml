@@ -1,12 +1,12 @@
 open Ast
+open Eio
 
 let rec print_liveset : asm -> RegSet.t list -> unit =
  fun prog live_sets ->
   match live_sets with
   | [] -> ()
   | x :: rest ->
-      print_string "\t";
-      print_endline (show_regset x);
+      traceln "\t%s" (show_regset x);
       print_instr prog rest
 
 and print_instr : asm -> RegSet.t list -> unit =
@@ -14,14 +14,14 @@ and print_instr : asm -> RegSet.t list -> unit =
   match prog with
   | [] -> ()
   | x :: rest ->
-      print_endline (show_instruction x);
+      traceln "%s" (show_instruction x);
       print_liveset rest live_sets
 
 let rec run : debug:int -> asm -> RegSet.t list =
  fun ~debug prog ->
   let live_sets = List.fold_right analyze_instr prog [ RegSet.empty ] in
   if debug >= 1 then (
-    print_endline "\n[pass] liveness analysis";
+    traceln "[pass] liveness analysis";
     print_liveset prog live_sets);
   live_sets
 

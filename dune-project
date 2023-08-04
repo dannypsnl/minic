@@ -23,6 +23,8 @@
   ocaml
   dune
   core
+  eio
+  eio_main
   ppx_deriving
   ppx_inline_test
   ppx_expect
