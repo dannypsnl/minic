@@ -17,6 +17,7 @@ and explicate_tail : rco_expr -> ctail =
   | `Int i -> Return (`CInt i)
   | `Var x -> Return (`CVar x)
   | `Let (x, t, body) -> explicate_assign t x (explicate_tail body)
+  | `If (_c, _t, _f) -> failwith "TODO"
   | `Prim (Not, [ a ]) -> Return (`Not (explicate_atom a))
   | `Prim (Add, [ a; b ]) -> Return (`Add (explicate_atom a, explicate_atom b))
   | `Prim (Sub, [ a; b ]) -> Return (`Sub (explicate_atom a, explicate_atom b))
@@ -34,6 +35,7 @@ and explicate_assign : rco_expr -> string -> ctail -> ctail =
   | `Let (x2, t, body) ->
       let body' = explicate_assign body x cont in
       explicate_assign t x2 body'
+  | `If (_c, _t, _f) -> failwith "TODO"
   | `Prim (Not, [ a ]) -> Seq (Assign (x, `Not (explicate_atom a)), cont)
   | `Prim (Add, [ a; b ]) ->
       Seq (Assign (x, `Add (explicate_atom a, explicate_atom b)), cont)

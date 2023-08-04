@@ -9,10 +9,17 @@ type atom = [ `Int of int | `Bool of bool | `Var of string ]
 type op = Add | Sub | Not | And | Or [@@deriving show, eq]
 
 type rco_expr =
-  [ atom | `Prim of op * atom list | `Let of string * rco_expr * rco_expr ]
+  [ atom
+  | `Prim of op * atom list
+  | `Let of string * rco_expr * rco_expr
+  | `If of rco_expr * rco_expr * rco_expr ]
 [@@deriving show, eq]
 
-type expr = [ atom | `Prim of op * expr list | `Let of string * expr * expr ]
+type expr =
+  [ atom
+  | `Prim of op * expr list
+  | `Let of string * expr * expr
+  | `If of expr * expr * expr ]
 [@@deriving show, eq]
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
@@ -88,6 +95,8 @@ let rec expr_from_sexp : Base.Sexp.t -> expr =
   | List [ Atom "not"; t ] -> `Prim (Not, [ expr_from_sexp t ])
   | List (Atom "and" :: rest) -> `Prim (And, rest |> List.map expr_from_sexp)
   | List (Atom "or" :: rest) -> `Prim (Or, rest |> List.map expr_from_sexp)
+  | List [ Atom "if"; cond; t; f ] ->
+      `If (expr_from_sexp cond, expr_from_sexp t, expr_from_sexp f)
   | List [ Atom "let"; List [ List [ Atom x; t ] ]; u ] ->
       `Let (validate_varname x, expr_from_sexp t, expr_from_sexp u)
   | Atom "#t" -> `Bool true

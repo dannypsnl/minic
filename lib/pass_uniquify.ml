@@ -20,6 +20,7 @@ and go : (string * int) list -> expr -> expr =
       in
       let env' = (x, new_cnt) :: env in
       `Let (form_var x new_cnt, go env t, go env' body)
+  | `If (c, t, f) -> `If (go env c, go env t, go env f)
 
 and form_var : string -> int -> string =
  fun name cnt -> name ^ "." ^ Int.to_string cnt
