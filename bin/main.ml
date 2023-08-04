@@ -1,5 +1,3 @@
-open Base
-open Parsexp_io
 open Minic.Ast
 open Eio
 
@@ -34,10 +32,10 @@ let () =
   Eio_main.run @@ fun env ->
   (* debug range: 0 ~ 3 *)
   let debug = 3 in
-  let filename = (Sys.get_argv ()).(1) in
-  let e = load_conv_exn Single ~filename (fun e -> e) in
+  let filename = (Base.Sys.get_argv ()).(1) in
+  let e = Parsexp_io.load_conv_exn Single ~filename (fun e -> e) in
   if debug >= 3 then
-    traceln "[stage0] s-expression\n%s" ([%derive.show: Sexp.t] e);
+    traceln "[stage0] s-expression\n%s" ([%derive.show: Base.Sexp.t] e);
   let prog =
     e |> expr_from_sexp |> Minic.Pass_uniquify.run
     |> Minic.Pass_shrink.run ~debug
