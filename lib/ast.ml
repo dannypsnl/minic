@@ -23,8 +23,15 @@ type expr =
 [@@deriving show, eq]
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
+type label = string [@@deriving eq]
 
-type ctail = Return of cexpr | Seq of cstmt * ctail [@@deriving eq]
+type ctail =
+  | Return of cexpr
+  | Seq of cstmt * ctail
+  | Goto of label
+  | If of { cmp : op; a : catom; b : catom; if_true : label; if_false : label }
+[@@deriving eq]
+
 and cstmt = Assign of string * cexpr [@@deriving eq]
 
 and cexpr =
@@ -122,6 +129,10 @@ and valid_charset : CharSet.t =
     CharSet.empty
 
 let rec show_ctail : ctail -> string = function
+  | Goto l -> "goto " ^ l
+  | If { cmp; a; b; if_true; if_false } ->
+      Format.sprintf "if %s %s %s then goto %s else goto %s" (show_catom a)
+        (show_op cmp) (show_catom b) if_true if_false
   | Return e -> show_cexpr e
   | Seq (s, k) -> show_cstmt s ^ ";\n" ^ show_ctail k
 
