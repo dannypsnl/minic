@@ -29,6 +29,10 @@ and patch_instruction : instruction -> instruction list = function
   | Xor (d, `Sp i, s2) -> patch_instr_s1 xor d i s2
   | Xor (d, s1, `Sp i) -> patch_instr_s2 xor d s1 i
   | Xor (d, s1, s2) -> [ Xor (d, s1, s2) ]
+  | CBNZ (`Sp i, label) ->
+      [ Ldr (`Reg "x28", `Reg "sp", i); CBNZ (`Reg "x28", label) ]
+  | CBZ (`Sp i, label) ->
+      [ Ldr (`Reg "x28", `Reg "sp", i); CBNZ (`Reg "x28", label) ]
   | i -> [ i ]
 
 and patch_instr_dest :
