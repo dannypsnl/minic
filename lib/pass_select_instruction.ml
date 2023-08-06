@@ -1,7 +1,7 @@
 open Ast
 open Eio
 
-let rec run : debug:int -> Pass_explicate_control.basic_blocks -> asm =
+let rec run : debug:int -> basic_blocks -> asm =
  fun ~debug bb ->
   let prog = bb |> List.map (fun (label, block) -> (label, go block)) in
   if debug >= 2 then traceln "[pass] select instructions\n%s" (show_asm prog);

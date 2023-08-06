@@ -44,6 +44,8 @@ and cexpr =
   | `Or of catom * catom ]
 [@@deriving eq]
 
+and basic_blocks = (label * ctail) list
+
 type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
 
 (* aarch64 *)
@@ -80,7 +82,8 @@ type instruction =
   | Ret
 [@@deriving eq]
 
-and asm = (label * instruction list) list [@@deriving eq]
+and block = label * instruction list
+and asm = block list [@@deriving eq]
 and dest = reg
 and src = [ reg | `Imm of int ] [@@deriving eq]
 
@@ -167,7 +170,7 @@ and show_catom : catom -> string = function
 let rec show_asm : asm -> string =
  fun prog -> prog |> List.map show_block |> String.concat "\n"
 
-and show_block : label * instruction list -> string =
+and show_block : block -> string =
  fun (label, instrs) ->
   label ^ ":\n"
   ^ (instrs

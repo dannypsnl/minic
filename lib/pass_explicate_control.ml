@@ -3,8 +3,6 @@ open Eio
 
 exception ToManyArguments of int
 
-type basic_blocks = (label * ctail) list
-
 let rec run : debug:int -> rco_expr -> basic_blocks =
  fun ~debug e ->
   temp_var_cnt := 1;
