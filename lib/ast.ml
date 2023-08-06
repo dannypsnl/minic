@@ -170,7 +170,9 @@ let rec show_asm : asm -> string =
 and show_block : label * instruction list -> string =
  fun (label, instrs) ->
   label ^ ":\n"
-  ^ (instrs |> List.map (fun i -> "\t" ^ show_instruction i) |> String.concat "")
+  ^ (instrs
+    |> List.map (fun i -> "\t" ^ show_instruction i)
+    |> String.concat "\n")
 
 and show_instruction : instruction -> string = function
   | B label -> Format.sprintf "b %s" label

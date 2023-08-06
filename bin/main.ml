@@ -36,14 +36,14 @@ let () =
   let e = Parsexp_io.load_conv_exn Single ~filename (fun e -> e) in
   if debug >= 3 then
     traceln "[stage0] s-expression\n%s" ([%derive.show: Base.Sexp.t] e);
-  let prog =
+  let _prog =
     e |> expr_from_sexp |> Minic.Pass_uniquify.run
     |> Minic.Pass_shrink.run ~debug
     |> Minic.Pass_remove_complex_operands.run ~debug
     |> Minic.Pass_explicate_control.run ~debug
     |> Minic.Pass_select_instruction.run ~debug
   in
-  traceln "%s" (show_asm prog)
+  ()
 (* let live_sets = prog |> Minic.Pass_liveness_analysis.run ~debug in *)
 (* let conflict_graph = Minic.Pass_graph_inference.run ~debug prog live_sets in *)
 (* let prog = *)

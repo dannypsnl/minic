@@ -11,8 +11,9 @@ and go : ctail -> instruction list = function
   | Return e -> compile_assign e (`Reg "x0") @ [ Ret ]
   | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ go c
   | Goto label -> [ B label ]
-  (* | If { cmp = `Eq; a; b = `CInt 1; thn; els } -> [] *)
-  | If _ -> []
+  | If { cmp = `Eq; a; b = `CInt 1; thn; els } ->
+      [ Mov (`Reg "x0", compile_atom a); CBNZ (`Reg "x0", thn); B els ]
+  | If _ -> failwith "TODO"
 
 and compile_assign : cexpr -> dest -> instruction list =
  fun expression assign_to ->
