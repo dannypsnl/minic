@@ -43,9 +43,9 @@ let () =
     |> Minic.Pass_explicate_control.run ~debug
     |> Minic.Pass_select_instruction.run ~debug
   in
-  let _live_sets = prog |> Minic.Pass_liveness_analysis.run ~debug in
+  let live_sets = prog |> Minic.Pass_liveness_analysis.run ~debug in
+  let _conflict_graph = Minic.Pass_graph_inference.run ~debug prog live_sets in
   ()
-(* let conflict_graph = Minic.Pass_graph_inference.run ~debug prog live_sets in *)
 (* let prog = *)
 (* Minic.Pass_register_allocation.run ~debug prog conflict_graph *)
 (* |> Minic.Pass_move_biasing.run ~debug *)
