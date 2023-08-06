@@ -217,3 +217,8 @@ let show_regset : RegSet.t -> string =
     | `Sp shift -> "[sp, " ^ Int.to_string shift ^ "]"
   in
   "{ " ^ (RegSet.elements set |> List.map f |> String.concat ", ") ^ " }"
+
+let show_basic_blocks : basic_blocks -> string =
+ fun blocks ->
+  let f = function label, ctail -> label ^ ":\n" ^ show_ctail ctail in
+  blocks |> List.map f |> String.concat "\n"

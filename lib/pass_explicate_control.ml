@@ -8,8 +8,10 @@ let rec run : debug:int -> rco_expr -> basic_blocks =
   temp_var_cnt := 1;
   let bb = ref [] in
   let r = explicate_tail ~bb e in
-  if debug >= 2 then traceln "[pass] explicate control\n%s" (show_ctail r);
-  ("entry", r) :: !bb
+  let bb = ("entry", r) :: !bb in
+  if debug >= 2 then
+    traceln "[pass] explicate control\n%s" (show_basic_blocks bb);
+  bb
 
 and explicate_tail : bb:basic_blocks ref -> rco_expr -> ctail =
  fun ~bb e ->
@@ -40,7 +42,29 @@ and explicate_assign :
       let body' = explicate_assign ~bb body x cont in
       explicate_assign ~bb t x2 body'
   | `If (c, t, f) ->
-      explicate_pred ~bb c (explicate_tail ~bb t) (explicate_tail ~bb f)
+      (* Consider code like
+
+          let x := if c then 1 else 2;
+            x + 10
+
+         This code shouldn't be transformed to
+
+          if c
+            then let x := 1 in x + 10
+            else let x := 2 in x + 10
+
+         which duplicate the code `x + 10` twice. Instead, we should create a new block
+
+          if c
+            then x := 1; goto L0
+            else x := 2; goto L0;
+          L0:
+            x + 10;
+      *)
+      let cont' = Goto (create_block ~bb cont) in
+      explicate_pred ~bb c
+        (explicate_assign ~bb t x cont')
+        (explicate_assign ~bb f x cont')
   | `Prim (Not, [ a ]) -> Seq (Assign (x, `Not (explicate_atom a)), cont)
   | `Prim (Add, [ a; b ]) ->
       Seq (Assign (x, `Add (explicate_atom a, explicate_atom b)), cont)
