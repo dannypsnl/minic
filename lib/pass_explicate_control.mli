@@ -1,3 +1,5 @@
 open Ast
 
-val run : debug:int -> rco_expr -> ctail
+type basic_blocks = (label * ctail) list
+
+val run : debug:int -> rco_expr -> basic_blocks

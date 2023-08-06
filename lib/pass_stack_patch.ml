@@ -3,11 +3,15 @@ open Eio
 
 let rec run : debug:int -> asm -> asm =
  fun ~debug prog ->
-  let prog = prog |> List.map patch_instruction |> List.concat in
+  let prog =
+    prog
+    |> List.map (fun (label, instrs) ->
+           (label, instrs |> List.map patch_instruction |> List.concat))
+  in
   if debug >= 1 then traceln "[pass] patch stack operations\n%s" (show_asm prog);
   prog
 
-and patch_instruction : instruction -> asm = function
+and patch_instruction : instruction -> instruction list = function
   | Mov (`Sp i, s) ->
       List.append (patch_instruction (Mov (`Reg "x28", s))) (patch_dest (`Sp i))
   | Mov (d, `Sp i) ->
@@ -30,30 +34,30 @@ and patch_instruction : instruction -> asm = function
   | i -> [ i ]
 
 and patch_instr_dest :
-    (reg * src * src -> instruction) -> int -> src -> src -> asm =
+    (reg * src * src -> instruction) -> int -> src -> src -> instruction list =
  fun c i s1 s2 ->
   List.append (patch_instruction (c (`Reg "x28", s1, s2))) (patch_dest (`Sp i))
 
 and patch_instr_s1 :
-    (reg * src * src -> instruction) -> reg -> int -> src -> asm =
+    (reg * src * src -> instruction) -> reg -> int -> src -> instruction list =
  fun c d i s2 ->
   List.append
     (patch_src (`Reg "x28") (`Sp i))
     (patch_instruction (c (d, `Reg "x28", s2)))
 
 and patch_instr_s2 :
-    (reg * src * src -> instruction) -> reg -> src -> int -> asm =
+    (reg * src * src -> instruction) -> reg -> src -> int -> instruction list =
  fun c d s1 i ->
   List.append
     (patch_src (`Reg "x27") (`Sp i))
     (patch_instruction (c (d, s1, `Reg "x27")))
 
-and patch_dest : reg -> asm = function
+and patch_dest : reg -> instruction list = function
   (* store x28 to stack *)
   | `Sp i -> [ Str (`Reg "x28", `Reg "sp", i) ]
   | _ -> []
 
-and patch_src : reg -> src -> asm =
+and patch_src : reg -> src -> instruction list =
  fun load_to src ->
   match src with
   (* load stack into x28 *)

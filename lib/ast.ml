@@ -24,12 +24,13 @@ type expr =
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 type label = string [@@deriving eq]
+type cmp_op = [ `Eq | `Lt | `Gt | `And | `Or ] [@@deriving show, eq]
 
 type ctail =
   | Return of cexpr
   | Seq of cstmt * ctail
   | Goto of label
-  | If of { cmp : op; a : catom; b : catom; if_true : label; if_false : label }
+  | If of { cmp : cmp_op; a : catom; b : catom; thn : label; els : label }
 [@@deriving eq]
 
 and cstmt = Assign of string * cexpr [@@deriving eq]
@@ -47,6 +48,15 @@ type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
 
 (* aarch64 *)
 type instruction =
+  (* b label *)
+  (* unconditionally jumps to pc-relative label *)
+  | B of label
+  (* cbz Xn, label *)
+  (* conditionally jumps to label if Xn is equal to zero *)
+  | CBZ of reg * label
+  (* cbnz Xn, label *)
+  (* conditionally jumps to label if Xn is not equal to zero *)
+  | CBNZ of reg * label
   (* add x0, x1, x2 *)
   (* 表示 x0 = x1 + x2 *)
   | Add of dest * src * src
@@ -70,7 +80,7 @@ type instruction =
   | Ret
 [@@deriving eq]
 
-and asm = instruction list [@@deriving eq]
+and asm = (label * instruction list) list [@@deriving eq]
 and dest = reg
 and src = [ reg | `Imm of int ] [@@deriving eq]
 
@@ -130,9 +140,11 @@ and valid_charset : CharSet.t =
 
 let rec show_ctail : ctail -> string = function
   | Goto l -> "goto " ^ l
-  | If { cmp; a; b; if_true; if_false } ->
-      Format.sprintf "if %s %s %s then goto %s else goto %s" (show_catom a)
-        (show_op cmp) (show_catom b) if_true if_false
+  | If { cmp; a; b; thn; els } ->
+      Format.sprintf "if %s %s %s\n  then goto %s\n  else goto %s"
+        (show_catom a)
+        ([%derive.show: cmp_op] cmp)
+        (show_catom b) thn els
   | Return e -> show_cexpr e
   | Seq (s, k) -> show_cstmt s ^ ";\n" ^ show_ctail k
 
@@ -153,10 +165,17 @@ and show_catom : catom -> string = function
   | `CVar x -> x
 
 let rec show_asm : asm -> string =
- fun prog ->
-  List.map (fun i -> "\t" ^ show_instruction i) prog |> String.concat "\n"
+ fun prog -> prog |> List.map show_block |> String.concat "\n"
+
+and show_block : label * instruction list -> string =
+ fun (label, instrs) ->
+  label ^ ":\n"
+  ^ (instrs |> List.map (fun i -> "\t" ^ show_instruction i) |> String.concat "")
 
 and show_instruction : instruction -> string = function
+  | B label -> Format.sprintf "b %s" label
+  | CBZ (c, label) -> Format.sprintf "cbz %s, %s" (show_reg c) label
+  | CBNZ (c, label) -> Format.sprintf "cbnz %s, %s" (show_reg c) label
   | Add (d, s1, s2) ->
       Format.sprintf "add %s, %s, %s" (show_reg d) (show_src s1) (show_src s2)
   | Sub (d, s1, s2) ->
