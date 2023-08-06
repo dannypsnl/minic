@@ -49,4 +49,5 @@ and go : expr -> expr = function
       let b' = go b in
       `Prim (Sub, `Prim (Sub, [ a'; b' ]) :: es) |> go
   | `Let (x, t, e) -> `Let (x, go t, go e)
+  | `If (c, t, f) -> `If (go c, go t, go f)
   | e -> BadExpr e |> raise
