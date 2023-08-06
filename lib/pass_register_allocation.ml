@@ -2,34 +2,37 @@ open Ast
 open Graph
 open Eio
 
+exception NotFound of string
 exception ShouldFilterOut
 
 module ColorM = Hashtbl.Make (String)
 
 let rec run : debug:int -> asm -> (label * Graph.t) list -> asm =
  fun ~debug prog block_graphs ->
+  let color_map : reg ColorM.t = ColorM.create 100 in
   let prog =
     prog
     |> List.map (fun (label, instrs) ->
-           (label, block_allocate instrs (List.assoc label block_graphs)))
+           ( label,
+             block_allocate color_map instrs
+               (List.assoc label block_graphs |> Graph.verticies) ))
   in
   if debug >= 2 then traceln "[pass] register allocation\n%s" (show_asm prog);
   prog
 
-and block_allocate : instruction list -> Graph.t -> instruction list =
- fun prog g ->
-  let working_set = Graph.verticies g in
+and block_allocate :
+    reg ColorM.t -> instruction list -> vertex list -> instruction list =
+ fun color_map prog working_set ->
   let working_set : vertex list =
     working_set
     (* filter out register, they should not be rewritten by this pass *)
-    |> List.filter (fun { value = v; _ } ->
-           match v with `Var _ -> true | _ -> false)
+    |> List.filter (fun { value; _ } ->
+           match value with `Var _ -> true | _ -> false)
     |> List.sort (fun { adjacency = s; _ } { adjacency = s2; _ } ->
            let a = RegSet.elements s |> List.length in
            let b = RegSet.elements s2 |> List.length in
            if a = b then 0 else if a < b then -1 else 1)
   in
-  let color_map : reg ColorM.t = ColorM.create (List.length working_set) in
   coloring working_set color_map;
   let drw = subst_dest color_map in
   let srw = subst_src color_map in
