@@ -13,11 +13,9 @@ let rec run : debug:int -> asm -> asm =
 
 and patch_instruction : instruction -> instruction list = function
   | Mov (`Sp i, s) ->
-      List.append (patch_instruction (Mov (`Reg "x28", s))) (patch_dest (`Sp i))
+      patch_instruction (Mov (`Reg "x28", s)) @ patch_dest (`Sp i)
   | Mov (d, `Sp i) ->
-      List.append
-        (patch_src (`Reg "x28") (`Sp i))
-        (patch_instruction (Mov (d, `Reg "x28")))
+      patch_src (`Reg "x28") (`Sp i) @ patch_instruction (Mov (d, `Reg "x28"))
   | Mov (d, s) -> [ Mov (d, s) ]
   | Add (`Sp i, s1, s2) -> patch_instr_dest add i s1 s2
   | Add (d, `Sp i, s2) -> patch_instr_s1 add d i s2
@@ -36,21 +34,17 @@ and patch_instruction : instruction -> instruction list = function
 and patch_instr_dest :
     (reg * src * src -> instruction) -> int -> src -> src -> instruction list =
  fun c i s1 s2 ->
-  List.append (patch_instruction (c (`Reg "x28", s1, s2))) (patch_dest (`Sp i))
+  patch_instruction (c (`Reg "x28", s1, s2)) @ patch_dest (`Sp i)
 
 and patch_instr_s1 :
     (reg * src * src -> instruction) -> reg -> int -> src -> instruction list =
  fun c d i s2 ->
-  List.append
-    (patch_src (`Reg "x28") (`Sp i))
-    (patch_instruction (c (d, `Reg "x28", s2)))
+  patch_src (`Reg "x28") (`Sp i) @ patch_instruction (c (d, `Reg "x28", s2))
 
 and patch_instr_s2 :
     (reg * src * src -> instruction) -> reg -> src -> int -> instruction list =
  fun c d s1 i ->
-  List.append
-    (patch_src (`Reg "x27") (`Sp i))
-    (patch_instruction (c (d, s1, `Reg "x27")))
+  patch_src (`Reg "x27") (`Sp i) @ patch_instruction (c (d, s1, `Reg "x27"))
 
 and patch_dest : reg -> instruction list = function
   (* store x28 to stack *)
