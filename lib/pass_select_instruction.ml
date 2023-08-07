@@ -15,6 +15,10 @@ and go : ctail -> instruction list = function
       [ CBNZ (`Var x, thn); B els ]
   | If { cmp = `Eq; a = `CInt i; b = `CInt 1; thn; els } ->
       if i = 1 then [ B thn ] else [ B els ]
+  | If { cmp = `Eq; a = `CVar x; b = `CInt 0; thn; els } ->
+      [ CBZ (`Var x, thn); B els ]
+  | If { cmp = `Eq; a = `CInt i; b = `CInt 0; thn; els } ->
+      if i = 0 then [ B thn ] else [ B els ]
   | If _ -> failwith "TODO"
 
 and compile_assign : cexpr -> dest -> instruction list =

@@ -7,19 +7,32 @@ type atom = [ `Int of int | `Bool of bool | `Var of string ]
 [@@deriving show, eq]
 
 type op = Add | Sub | Not | And | Or [@@deriving show, eq]
+type bin_op = Add | Sub | And | Or [@@deriving show, eq]
+type un_op = Not [@@deriving show, eq]
 
 type rco_expr =
   [ atom
-  | `Prim of op * atom list
+  | `Binary of bin_op * atom * atom
+  | `Unary of un_op * atom
   | `Let of string * rco_expr * rco_expr
   | `If of rco_expr * rco_expr * rco_expr ]
 [@@deriving show, eq]
 
 type expr =
   [ atom
-  | `Prim of op * expr list
+  | `Binary of bin_op * expr * expr
+  | `Unary of un_op * expr
   | `Let of string * expr * expr
   | `If of expr * expr * expr ]
+[@@deriving show, eq]
+
+and surface_expr =
+  [ atom
+  | `Prim of op * surface_expr list
+  | `Let of string * surface_expr * surface_expr
+  | `If of surface_expr * surface_expr * surface_expr
+  | (* (cond {clause}+ *)
+    `Cond of (surface_expr * surface_expr) list ]
 [@@deriving show, eq]
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
@@ -107,7 +120,7 @@ and iand (d, s1, s2) = And (d, s1, s2)
 and ior (d, s1, s2) = Or (d, s1, s2)
 
 (* below are helper functions *)
-let rec expr_from_sexp : Base.Sexp.t -> expr =
+let rec expr_from_sexp : Base.Sexp.t -> surface_expr =
  fun se ->
   match se with
   | List (Atom "+" :: rest) -> `Prim (Add, rest |> List.map expr_from_sexp)
@@ -117,6 +130,7 @@ let rec expr_from_sexp : Base.Sexp.t -> expr =
   | List (Atom "or" :: rest) -> `Prim (Or, rest |> List.map expr_from_sexp)
   | List [ Atom "if"; cond; t; f ] ->
       `If (expr_from_sexp cond, expr_from_sexp t, expr_from_sexp f)
+  | List (Atom "cond" :: clauses) -> `Cond (clauses |> List.map clause_from_sexp)
   | List [ Atom "let"; List [ List [ Atom x; t ] ]; u ] ->
       `Let (validate_varname x, expr_from_sexp t, expr_from_sexp u)
   | Atom "#t" -> `Bool true
@@ -126,6 +140,12 @@ let rec expr_from_sexp : Base.Sexp.t -> expr =
       | Some i -> `Int i
       | None -> `Var (validate_varname x))
   | List _ -> raise (Unhandled_sexp se)
+
+and clause_from_sexp : Base.Sexp.t -> surface_expr * surface_expr =
+ fun se ->
+  match se with
+  | List [ cond; e ] -> (expr_from_sexp cond, expr_from_sexp e)
+  | _ -> raise (Unhandled_sexp se)
 
 and validate_varname : string -> string = fun x -> String.map validate_char x
 

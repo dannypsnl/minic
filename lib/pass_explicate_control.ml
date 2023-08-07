@@ -1,8 +1,6 @@
 open Ast
 open Eio
 
-exception ToManyArguments of int
-
 let rec run : debug:int -> rco_expr -> basic_blocks =
  fun ~debug e ->
   temp_var_cnt := 1;
@@ -23,12 +21,11 @@ and explicate_tail : bb:basic_blocks ref -> rco_expr -> ctail =
   | `Let (x, t, body) -> explicate_assign ~bb t x (explicate_tail ~bb body)
   | `If (c, t, f) ->
       explicate_pred ~bb c (explicate_tail ~bb t) (explicate_tail ~bb f)
-  | `Prim (Not, [ a ]) -> Return (`Not (explicate_atom a))
-  | `Prim (Add, [ a; b ]) -> Return (`Add (explicate_atom a, explicate_atom b))
-  | `Prim (Sub, [ a; b ]) -> Return (`Sub (explicate_atom a, explicate_atom b))
-  | `Prim (And, [ a; b ]) -> Return (`And (explicate_atom a, explicate_atom b))
-  | `Prim (Or, [ a; b ]) -> Return (`Or (explicate_atom a, explicate_atom b))
-  | `Prim (_, es) -> raise (ToManyArguments (List.length es))
+  | `Unary (Not, a) -> Return (`Not (explicate_atom a))
+  | `Binary (Add, a, b) -> Return (`Add (explicate_atom a, explicate_atom b))
+  | `Binary (Sub, a, b) -> Return (`Sub (explicate_atom a, explicate_atom b))
+  | `Binary (And, a, b) -> Return (`And (explicate_atom a, explicate_atom b))
+  | `Binary (Or, a, b) -> Return (`Or (explicate_atom a, explicate_atom b))
 
 and explicate_assign :
     bb:basic_blocks ref -> rco_expr -> string -> ctail -> ctail =
@@ -65,16 +62,15 @@ and explicate_assign :
       explicate_pred ~bb c
         (explicate_assign ~bb t x cont')
         (explicate_assign ~bb f x cont')
-  | `Prim (Not, [ a ]) -> Seq (Assign (x, `Not (explicate_atom a)), cont)
-  | `Prim (Add, [ a; b ]) ->
+  | `Unary (Not, a) -> Seq (Assign (x, `Not (explicate_atom a)), cont)
+  | `Binary (Add, a, b) ->
       Seq (Assign (x, `Add (explicate_atom a, explicate_atom b)), cont)
-  | `Prim (Sub, [ a; b ]) ->
+  | `Binary (Sub, a, b) ->
       Seq (Assign (x, `Sub (explicate_atom a, explicate_atom b)), cont)
-  | `Prim (And, [ a; b ]) ->
+  | `Binary (And, a, b) ->
       Seq (Assign (x, `And (explicate_atom a, explicate_atom b)), cont)
-  | `Prim (Or, [ a; b ]) ->
+  | `Binary (Or, a, b) ->
       Seq (Assign (x, `Or (explicate_atom a, explicate_atom b)), cont)
-  | `Prim (_, es) -> raise (ToManyArguments (List.length es))
 
 and explicate_pred : bb:basic_blocks ref -> rco_expr -> ctail -> ctail -> ctail
     =
@@ -96,7 +92,16 @@ and explicate_pred : bb:basic_blocks ref -> rco_expr -> ctail -> ctail -> ctail
       let name = "tmp2." ^ Int.to_string !temp_var_cnt in
       explicate_assign ~bb (`If (c, t, f)) name
       @@ explicate_pred ~bb (`Var name) thn els
-  | `Prim (And, [ a; b ]) ->
+  | `Unary (Not, a) ->
+      If
+        {
+          cmp = `Eq;
+          a = explicate_atom a;
+          b = `CInt 0;
+          thn = create_block ~bb thn;
+          els = create_block ~bb els;
+        }
+  | `Binary (And, a, b) ->
       If
         {
           cmp = `And;
@@ -105,7 +110,7 @@ and explicate_pred : bb:basic_blocks ref -> rco_expr -> ctail -> ctail -> ctail
           thn = create_block ~bb thn;
           els = create_block ~bb els;
         }
-  | `Prim (Or, [ a; b ]) ->
+  | `Binary (Or, a, b) ->
       If
         {
           cmp = `Or;

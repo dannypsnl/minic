@@ -24,14 +24,18 @@ and rco_atom : expr -> atom * (string * rco_expr) list =
 and rco_expr : expr -> rco_expr =
  fun e ->
   match e with
-  | `Prim (op, es) ->
-      let es' = List.map rco_atom es in
-      let atoms, bb = List.split es' in
-      let bindings = List.concat bb in
+  | `Binary (op, l, r) ->
+      let l', bindings = rco_atom l in
+      let r', bindings' = rco_atom r in
+      let bindings = bindings @ bindings' in
       bindings
       |> List.fold_left
            (fun body (x, e) -> `Let (x, e, body))
-           (`Prim (op, atoms))
+           (`Binary (op, l', r'))
+  | `Unary (op, e) ->
+      let e', bindings = rco_atom e in
+      bindings
+      |> List.fold_left (fun body (x, e) -> `Let (x, e, body)) (`Unary (op, e'))
   | `If (c, t, f) -> `If (rco_expr c, rco_expr t, rco_expr f)
   | `Let (x, t, body) -> `Let (x, rco_expr t, rco_expr body)
   | `Var x -> `Var x

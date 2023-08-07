@@ -15,21 +15,24 @@ let () =
     [
       ( "boolean",
         [
-          test_case "if" `Quick
+          test_case "if form" `Quick
           @@ test_example_if ~filename:"../example/boolean_if.ss"
                ~expected_output:"10";
-          test_case "if2" `Quick
+          test_case "if form 2" `Quick
           @@ test_example_if ~filename:"../example/boolean_if2.ss"
                ~expected_output:"15";
-          test_case "if3" `Quick
+          test_case "if form 3" `Quick
           @@ test_example_if ~filename:"../example/boolean_if3.ss"
                ~expected_output:"33";
-          test_case "not not" `Quick
+          test_case "(not (not x))" `Quick
           @@ test_example_if ~filename:"../example/boolean.ss"
                ~expected_output:"1";
-          test_case "and" `Quick
+          test_case "(and x y)" `Quick
           @@ test_example_if ~filename:"../example/boolean2.ss"
                ~expected_output:"0";
+          test_case "cond form" `Quick
+          @@ test_example_if ~filename:"../example/cond.ss"
+               ~expected_output:"34";
         ] );
       ( "arithmetic",
         [
