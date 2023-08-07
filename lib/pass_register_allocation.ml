@@ -44,6 +44,8 @@ and block_allocate :
       | Or (d, s1, s2) -> Or (drw d, srw s1, srw s2)
       | And (d, s1, s2) -> And (drw d, srw s1, srw s2)
       | Mov (d, s) -> Mov (drw d, srw s)
+      | CBNZ (c, label) -> CBNZ (drw c, label)
+      | CBZ (c, label) -> CBZ (drw c, label)
       | instr -> instr)
     prog
 

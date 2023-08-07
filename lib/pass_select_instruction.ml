@@ -11,8 +11,10 @@ and go : ctail -> instruction list = function
   | Return e -> compile_assign e (`Reg "x0") @ [ Ret ]
   | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ go c
   | Goto label -> [ B label ]
-  | If { cmp = `Eq; a; b = `CInt 1; thn; els } ->
-      [ Mov (`Reg "x0", compile_atom a); CBNZ (`Reg "x0", thn); B els ]
+  | If { cmp = `Eq; a = `CVar x; b = `CInt 1; thn; els } ->
+      [ CBNZ (`Var x, thn); B els ]
+  | If { cmp = `Eq; a = `CInt i; b = `CInt 1; thn; els } ->
+      if i = 1 then [ B thn ] else [ B els ]
   | If _ -> failwith "TODO"
 
 and compile_assign : cexpr -> dest -> instruction list =
