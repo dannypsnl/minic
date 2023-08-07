@@ -1,0 +1,5 @@
+(test
+ (name minic)
+ (deps
+  (glob_files_rec ../example/*))
+ (libraries minic alcotest eio eio_main))

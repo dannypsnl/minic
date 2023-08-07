@@ -23,6 +23,7 @@
   ocaml
   dune
   core
+  (alcotest :with-test)
   eio
   eio_main
   ppx_deriving
