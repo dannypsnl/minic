@@ -42,7 +42,8 @@ and block_graph : instruction list -> RegSet.t list -> Graph.t =
          | Sub (d, _, _)
          | Xor (d, _, _)
          | Or (d, _, _)
-         | And (d, _, _) ->
+         | And (d, _, _)
+         | Csel (d, _, _, _) ->
              vs
              |> List.iter (fun v ->
                     if not ([%derive.eq: reg] v d) then
@@ -53,5 +54,5 @@ and block_graph : instruction list -> RegSet.t list -> Graph.t =
                     else
                       conflict_graph :=
                         !conflict_graph |> Graph.overlay (Graph.vertex d))
-         | Str _ | Ldr _ | Ret | B _ | CBZ _ | CBNZ _ -> ());
+         | Str _ | Ldr _ | Ret | B _ | CBZ _ | CBNZ _ | Cmp _ -> ());
   !conflict_graph

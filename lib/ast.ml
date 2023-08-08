@@ -6,8 +6,12 @@ exception InvalidCharInVariable of char
 type atom = [ `Int of int | `Bool of bool | `Var of string ]
 [@@deriving show, eq]
 
-type op = Add | Sub | Not | And | Or [@@deriving show, eq]
-type bin_op = Add | Sub | And | Or [@@deriving show, eq]
+type op = EQ | GT | GE | LT | LE | Add | Sub | Not | And | Or
+[@@deriving show, eq]
+
+type bin_op = EQ | GT | GE | LT | LE | Add | Sub | And | Or
+[@@deriving show, eq]
+
 type un_op = Not [@@deriving show, eq]
 
 type rco_expr =
@@ -37,7 +41,7 @@ and surface_expr =
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 type label = string [@@deriving eq]
-type cmp_op = [ `Eq | `Lt | `Gt | `And | `Or ] [@@deriving show, eq]
+type cmp_op = [ `Eq | `Ge | `Gt | `Le | `Lt | `And | `Or ] [@@deriving show, eq]
 
 type ctail =
   | Return of cexpr
@@ -54,7 +58,12 @@ and cexpr =
   | `Add of catom * catom
   | `Sub of catom * catom
   | `And of catom * catom
-  | `Or of catom * catom ]
+  | `Or of catom * catom
+  | `EQ of catom * catom
+  | `GT of catom * catom
+  | `GE of catom * catom
+  | `LT of catom * catom
+  | `LE of catom * catom ]
 [@@deriving eq]
 
 and basic_blocks = (label * ctail) list
@@ -63,6 +72,8 @@ type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
 
 (* aarch64 *)
 type instruction =
+  | Cmp of reg * src
+  | Csel of reg * reg * reg * cmp_op
   (* b label *)
   (* unconditionally jumps to pc-relative label *)
   | B of label
@@ -123,6 +134,11 @@ and ior (d, s1, s2) = Or (d, s1, s2)
 let rec expr_from_sexp : Base.Sexp.t -> surface_expr =
  fun se ->
   match se with
+  | List (Atom "=" :: rest) -> `Prim (EQ, rest |> List.map expr_from_sexp)
+  | List (Atom ">" :: rest) -> `Prim (GT, rest |> List.map expr_from_sexp)
+  | List (Atom ">=" :: rest) -> `Prim (GE, rest |> List.map expr_from_sexp)
+  | List (Atom "<" :: rest) -> `Prim (LT, rest |> List.map expr_from_sexp)
+  | List (Atom "<=" :: rest) -> `Prim (LE, rest |> List.map expr_from_sexp)
   | List (Atom "+" :: rest) -> `Prim (Add, rest |> List.map expr_from_sexp)
   | List (Atom "-" :: rest) -> `Prim (Sub, rest |> List.map expr_from_sexp)
   | List [ Atom "not"; t ] -> `Prim (Not, [ expr_from_sexp t ])
@@ -182,10 +198,24 @@ and show_cexpr : cexpr -> string = function
   | `Sub (a, b) -> Format.sprintf "%s - %s" (show_catom a) (show_catom b)
   | `And (a, b) -> Format.sprintf "%s and %s" (show_catom a) (show_catom b)
   | `Or (a, b) -> Format.sprintf "%s or %s" (show_catom a) (show_catom b)
+  | `EQ (a, b) -> Format.sprintf "%s = %s" (show_catom a) (show_catom b)
+  | `GT (a, b) -> Format.sprintf "%s > %s" (show_catom a) (show_catom b)
+  | `GE (a, b) -> Format.sprintf "%s >= %s" (show_catom a) (show_catom b)
+  | `LT (a, b) -> Format.sprintf "%s < %s" (show_catom a) (show_catom b)
+  | `LE (a, b) -> Format.sprintf "%s <= %s" (show_catom a) (show_catom b)
 
 and show_catom : catom -> string = function
   | `CInt i -> Int.to_string i
   | `CVar x -> x
+
+let show_cmp_op : cmp_op -> string = function
+  | `And -> "and"
+  | `Or -> "or"
+  | `Eq -> "eq"
+  | `Gt -> "gt"
+  | `Ge -> "ge"
+  | `Lt -> "lt"
+  | `Le -> "le"
 
 let rec show_asm : asm -> string =
  fun prog -> prog |> List.map show_block |> String.concat "\n"
@@ -198,6 +228,10 @@ and show_block : block -> string =
     |> String.concat "\n")
 
 and show_instruction : instruction -> string = function
+  | Cmp (r, s) -> Format.sprintf "cmp %s, %s" (show_reg r) (show_src s)
+  | Csel (d, r1, r2, op) ->
+      Format.sprintf "csel %s, %s, %s, %s" (show_reg d) (show_reg r1)
+        (show_reg r2) (show_cmp_op op)
   | B label -> Format.sprintf "b %s" label
   | CBZ (c, label) -> Format.sprintf "cbz %s, %s" (show_reg c) label
   | CBNZ (c, label) -> Format.sprintf "cbnz %s, %s" (show_reg c) label

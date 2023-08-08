@@ -13,6 +13,12 @@ let () =
   let open Alcotest in
   run "Compiler"
     [
+      ( "compare",
+        [
+          test_case "<= as result" `Quick
+          @@ test_example_if ~filename:"../example/compare.ss"
+               ~expected_output:"1";
+        ] );
       ( "boolean",
         [
           test_case "if form" `Quick

@@ -3,7 +3,6 @@ open Eio
 
 let rec run : debug:int -> rco_expr -> basic_blocks =
  fun ~debug e ->
-  temp_var_cnt := 1;
   let bb = ref [] in
   let r = explicate_tail ~bb e in
   let bb = ("entry", r) :: !bb in
@@ -26,6 +25,11 @@ and explicate_tail : bb:basic_blocks ref -> rco_expr -> ctail =
   | `Binary (Sub, a, b) -> Return (`Sub (explicate_atom a, explicate_atom b))
   | `Binary (And, a, b) -> Return (`And (explicate_atom a, explicate_atom b))
   | `Binary (Or, a, b) -> Return (`Or (explicate_atom a, explicate_atom b))
+  | `Binary (EQ, a, b) -> Return (`EQ (explicate_atom a, explicate_atom b))
+  | `Binary (GT, a, b) -> Return (`GT (explicate_atom a, explicate_atom b))
+  | `Binary (GE, a, b) -> Return (`GE (explicate_atom a, explicate_atom b))
+  | `Binary (LT, a, b) -> Return (`LT (explicate_atom a, explicate_atom b))
+  | `Binary (LE, a, b) -> Return (`LE (explicate_atom a, explicate_atom b))
 
 and explicate_assign :
     bb:basic_blocks ref -> rco_expr -> string -> ctail -> ctail =
@@ -71,6 +75,16 @@ and explicate_assign :
       Seq (Assign (x, `And (explicate_atom a, explicate_atom b)), cont)
   | `Binary (Or, a, b) ->
       Seq (Assign (x, `Or (explicate_atom a, explicate_atom b)), cont)
+  | `Binary (EQ, a, b) ->
+      Seq (Assign (x, `EQ (explicate_atom a, explicate_atom b)), cont)
+  | `Binary (GT, a, b) ->
+      Seq (Assign (x, `GT (explicate_atom a, explicate_atom b)), cont)
+  | `Binary (GE, a, b) ->
+      Seq (Assign (x, `GE (explicate_atom a, explicate_atom b)), cont)
+  | `Binary (LT, a, b) ->
+      Seq (Assign (x, `LT (explicate_atom a, explicate_atom b)), cont)
+  | `Binary (LE, a, b) ->
+      Seq (Assign (x, `LE (explicate_atom a, explicate_atom b)), cont)
 
 and explicate_pred : bb:basic_blocks ref -> rco_expr -> ctail -> ctail -> ctail
     =
@@ -89,7 +103,7 @@ and explicate_pred : bb:basic_blocks ref -> rco_expr -> ctail -> ctail -> ctail
   | `Let (x, t, body) ->
       explicate_assign ~bb t x @@ explicate_pred ~bb body thn els
   | `If (c, t, f) ->
-      let name = "tmp2." ^ Int.to_string !temp_var_cnt in
+      let name = Variable.make "tmp" in
       explicate_assign ~bb (`If (c, t, f)) name
       @@ explicate_pred ~bb (`Var name) thn els
   | `Unary (Not, a) ->
@@ -138,5 +152,3 @@ and explicate_atom : atom -> catom =
   | `Bool false -> `CInt 0
   | `Int i -> `CInt i
   | `Var x -> `CVar x
-
-and temp_var_cnt = ref 1

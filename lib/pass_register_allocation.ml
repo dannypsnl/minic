@@ -46,6 +46,9 @@ and block_allocate :
       | Mov (d, s) -> Mov (drw d, srw s)
       | CBNZ (c, label) -> CBNZ (drw c, label)
       | CBZ (c, label) -> CBZ (drw c, label)
+      | B label -> B label
+      | Cmp (r, s) -> Cmp (drw r, srw s)
+      | Csel (d, r1, r2, c) -> Csel (drw d, drw r1, drw r2, c)
       | instr -> instr)
     prog
 

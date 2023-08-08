@@ -85,6 +85,8 @@ and live_before : instruction -> RegSet.t -> RegSet.t =
   |> RegSet.union (read_variables instr)
 
 and read_variables : instruction -> RegSet.t = function
+  | Csel (_, r1, r2, _) -> RegSet.of_list [ r1; r2 ]
+  | Cmp (r, s) -> RegSet.singleton r |> RegSet.union (convert [ s ])
   | B _ -> RegSet.empty
   | CBZ (r, _) | CBNZ (r, _) -> RegSet.singleton r
   | Add (_, r1, r2)
@@ -105,7 +107,8 @@ and convert : src list -> RegSet.t = function
   | _ :: srcs -> convert srcs
 
 and written_locations : instruction -> RegSet.t = function
-  | B _ | CBZ _ | CBNZ _ -> RegSet.empty
+  | Cmp _ | B _ | CBZ _ | CBNZ _ -> RegSet.empty
+  | Csel (d, _, _, _)
   | Add (d, _, _)
   | Sub (d, _, _)
   | Xor (d, _, _)
