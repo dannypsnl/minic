@@ -7,7 +7,9 @@ let rec run : debug:int -> basic_blocks -> asm =
   if debug >= 2 then traceln "[pass] select instructions\n%s" (show_asm prog);
   prog
 
-and go : ctail -> instruction list = function
+and go : ctail -> instruction list =
+ fun t ->
+  match t with
   | Return e -> compile_assign e (`Reg "x0") @ [ Ret ]
   | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ go c
   | Goto label -> [ B label ]
@@ -19,7 +21,14 @@ and go : ctail -> instruction list = function
       [ CBZ (`Var x, thn); B els ]
   | If { cmp = `Eq; a = `CInt i; b = `CInt 0; thn; els } ->
       if i = 0 then [ B thn ] else [ B els ]
-  | If _ -> failwith "TODO"
+  | If { cmp = `And; a = `CInt a; b = `CInt b; thn; els } ->
+      if a = 1 && b = 1 then [ B thn ] else [ B els ]
+  | If { cmp = `And; a = `CVar x; b = e2; thn; els } ->
+      [ iand (`Var x, Reg.to_src (`Var x), compile_atom e2) ]
+      @ [ CBNZ (`Var x, thn); B els ]
+  | If _ ->
+      traceln "%s" (show_ctail t);
+      failwith "TODO"
 
 and compile_assign : cexpr -> dest -> instruction list =
  fun expression assign_to ->

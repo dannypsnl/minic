@@ -53,12 +53,17 @@ and block_allocate :
     prog
 
 and subst_dest : reg ColorM.t -> dest -> dest =
- fun colors d -> match d with `Var x -> ColorM.find colors x | reg -> reg
+ fun colors -> function
+  | `Var x -> (
+      match ColorM.find_opt colors x with Some v -> v | None -> `Reg "x26")
+  | reg -> reg
 
 and subst_src : reg ColorM.t -> src -> src =
  fun colors s ->
   match s with
-  | `Var x -> ColorM.find colors x |> Reg.to_src
+  | `Var x ->
+      (match ColorM.find_opt colors x with Some v -> v | None -> `Reg "x26")
+      |> Reg.to_src
   | `Imm i -> `Imm i
   | reg -> reg
 

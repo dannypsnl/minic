@@ -30,6 +30,9 @@ let () =
           test_case "if form 3" `Quick
           @@ test_example_if ~filename:"../example/boolean_if3.ss"
                ~expected_output:"33";
+          test_case "if form 4" `Quick
+          @@ test_example_if ~filename:"../example/boolean_if4.ss"
+               ~expected_output:"20";
           test_case "(not (not x))" `Quick
           @@ test_example_if ~filename:"../example/boolean.ss"
                ~expected_output:"1";
