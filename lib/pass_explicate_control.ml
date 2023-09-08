@@ -26,8 +26,6 @@ and explicate_tail : bb:basic_blocks ref -> rco_expr -> ctail =
   | `Binary (And, a, b) -> Return (`And (explicate_atom a, explicate_atom b))
   | `Binary (Or, a, b) -> Return (`Or (explicate_atom a, explicate_atom b))
   | `Binary (EQ, a, b) -> Return (`EQ (explicate_atom a, explicate_atom b))
-  | `Binary (GT, a, b) -> Return (`GT (explicate_atom a, explicate_atom b))
-  | `Binary (GE, a, b) -> Return (`GE (explicate_atom a, explicate_atom b))
   | `Binary (LT, a, b) -> Return (`LT (explicate_atom a, explicate_atom b))
   | `Binary (LE, a, b) -> Return (`LE (explicate_atom a, explicate_atom b))
 
@@ -77,10 +75,6 @@ and explicate_assign :
       Seq (Assign (x, `Or (explicate_atom a, explicate_atom b)), cont)
   | `Binary (EQ, a, b) ->
       Seq (Assign (x, `EQ (explicate_atom a, explicate_atom b)), cont)
-  | `Binary (GT, a, b) ->
-      Seq (Assign (x, `GT (explicate_atom a, explicate_atom b)), cont)
-  | `Binary (GE, a, b) ->
-      Seq (Assign (x, `GE (explicate_atom a, explicate_atom b)), cont)
   | `Binary (LT, a, b) ->
       Seq (Assign (x, `LT (explicate_atom a, explicate_atom b)), cont)
   | `Binary (LE, a, b) ->

@@ -15,9 +15,12 @@ let () =
     [
       ( "compare",
         [
-          test_case "<= as result" `Quick
+          test_case "x <= 3 as result" `Quick
           @@ test_example_if ~filename:"../example/compare.ss"
                ~expected_output:"1";
+          test_case "x = 3 result" `Quick
+          @@ test_example_if ~filename:"../example/compare2.ss"
+               ~expected_output:"0";
         ] );
       ( "boolean",
         [

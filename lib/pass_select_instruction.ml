@@ -46,21 +46,25 @@ and compile_assign : cexpr -> dest -> instruction list =
   | `Sub (e1, e2) -> two_expr sub assign_to e1 e2
   | `And (e1, e2) -> two_expr iand assign_to e1 e2
   | `Or (e1, e2) -> two_expr ior assign_to e1 e2
-  | `EQ (e1, e2) | `GT (e1, e2) | `GE (e1, e2) | `LT (e1, e2) | `LE (e1, e2) ->
-      let pre, e1' =
-        match e1 with
-        | `CInt i -> ([ Mov (assign_to, `Imm i) ], assign_to)
-        | `CVar x -> ([], `Var x)
-      in
-      let tmp1 = `Var (Variable.make "tmp") in
-      let tmp2 = `Var (Variable.make "tmp") in
-      pre
-      @ [
-          Cmp (e1', compile_atom e2);
-          Mov (tmp1, `Imm 1);
-          Mov (tmp2, `Imm 0);
-          Csel (assign_to, tmp1, tmp2, `Le);
-        ]
+  | `EQ (e1, e2) -> compare assign_to e1 e2 `Eq
+  | `LT (e1, e2) -> compare assign_to e1 e2 `Lt
+  | `LE (e1, e2) -> compare assign_to e1 e2 `Le
+
+and compare assign_to e1 e2 cond =
+  let pre, e1' =
+    match e1 with
+    | `CInt i -> ([ Mov (assign_to, `Imm i) ], assign_to)
+    | `CVar x -> ([], `Var x)
+  in
+  let tmp1 = `Var (Variable.make "tmp") in
+  let tmp2 = `Var (Variable.make "tmp") in
+  pre
+  @ [
+      Cmp (e1', compile_atom e2);
+      Mov (tmp1, `Imm 1);
+      Mov (tmp2, `Imm 0);
+      Csel (assign_to, tmp1, tmp2, cond);
+    ]
 
 and single_expr :
     (reg * src * src -> instruction) ->

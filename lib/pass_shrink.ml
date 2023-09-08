@@ -26,18 +26,8 @@ and go : surface_expr -> expr = function
   | `Var v -> `Var v
   | `Bool b -> `Bool b
   | `Prim (EQ, [ a; b ]) -> `Binary (EQ, go a, go b)
-  | `Prim (EQ, [ a; b; c ]) -> `Binary (EQ, go a, `Binary (EQ, go b, go c))
-  | `Prim (EQ, es) ->
-      let es1, es2 = split es in
-      `Binary (EQ, `Prim (EQ, es1) |> go, `Prim (EQ, es2) |> go)
-  | `Prim (GT, [ a; b ]) -> `Binary (GT, go a, go b)
-  | `Prim (GT, a :: b :: es) -> `Prim (GT, `Prim (GT, [ a; b ]) :: es) |> go
-  | `Prim (GE, [ a; b ]) -> `Binary (GE, go a, go b)
-  | `Prim (GE, a :: b :: es) -> `Prim (GE, `Prim (GE, [ a; b ]) :: es) |> go
   | `Prim (LT, [ a; b ]) -> `Binary (LT, go a, go b)
-  | `Prim (LT, a :: b :: es) -> `Prim (LT, `Prim (LT, [ a; b ]) :: es) |> go
   | `Prim (LE, [ a; b ]) -> `Binary (LE, go a, go b)
-  | `Prim (LE, a :: b :: es) -> `Prim (LE, `Prim (LE, [ a; b ]) :: es) |> go
   | `Prim (Not, [ a ]) -> `Unary (Not, go a)
   | `Prim (Add, [ a; b ]) -> `Binary (Add, go a, go b)
   | `Prim (Add, [ a; b; c ]) -> `Binary (Add, go a, `Binary (Add, go b, go c))

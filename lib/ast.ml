@@ -6,12 +6,8 @@ exception InvalidCharInVariable of char
 type atom = [ `Int of int | `Bool of bool | `Var of string ]
 [@@deriving show, eq]
 
-type op = EQ | GT | GE | LT | LE | Add | Sub | Not | And | Or
-[@@deriving show, eq]
-
-type bin_op = EQ | GT | GE | LT | LE | Add | Sub | And | Or
-[@@deriving show, eq]
-
+type op = EQ | LT | LE | Add | Sub | Not | And | Or [@@deriving show, eq]
+type bin_op = EQ | LT | LE | Add | Sub | And | Or [@@deriving show, eq]
 type un_op = Not [@@deriving show, eq]
 
 type rco_expr =
@@ -60,8 +56,6 @@ and cexpr =
   | `And of catom * catom
   | `Or of catom * catom
   | `EQ of catom * catom
-  | `GT of catom * catom
-  | `GE of catom * catom
   | `LT of catom * catom
   | `LE of catom * catom ]
 [@@deriving eq]
@@ -135,8 +129,6 @@ let rec expr_from_sexp : Base.Sexp.t -> surface_expr =
  fun se ->
   match se with
   | List (Atom "=" :: rest) -> `Prim (EQ, rest |> List.map expr_from_sexp)
-  | List (Atom ">" :: rest) -> `Prim (GT, rest |> List.map expr_from_sexp)
-  | List (Atom ">=" :: rest) -> `Prim (GE, rest |> List.map expr_from_sexp)
   | List (Atom "<" :: rest) -> `Prim (LT, rest |> List.map expr_from_sexp)
   | List (Atom "<=" :: rest) -> `Prim (LE, rest |> List.map expr_from_sexp)
   | List (Atom "+" :: rest) -> `Prim (Add, rest |> List.map expr_from_sexp)
@@ -198,9 +190,7 @@ and show_cexpr : cexpr -> string = function
   | `Sub (a, b) -> Format.sprintf "%s - %s" (show_catom a) (show_catom b)
   | `And (a, b) -> Format.sprintf "%s and %s" (show_catom a) (show_catom b)
   | `Or (a, b) -> Format.sprintf "%s or %s" (show_catom a) (show_catom b)
-  | `EQ (a, b) -> Format.sprintf "%s = %s" (show_catom a) (show_catom b)
-  | `GT (a, b) -> Format.sprintf "%s > %s" (show_catom a) (show_catom b)
-  | `GE (a, b) -> Format.sprintf "%s >= %s" (show_catom a) (show_catom b)
+  | `EQ (a, b) -> Format.sprintf "%s =? %s" (show_catom a) (show_catom b)
   | `LT (a, b) -> Format.sprintf "%s < %s" (show_catom a) (show_catom b)
   | `LE (a, b) -> Format.sprintf "%s <= %s" (show_catom a) (show_catom b)
 
