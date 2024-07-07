@@ -70,7 +70,8 @@ and cexpr =
   | `Void ]
 [@@deriving eq]
 
-and basic_blocks = (label * ctail) list
+and basic_block = { name : label; body : ctail; successor : label option }
+and basic_blocks = (label * basic_block) list
 
 type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
 
@@ -279,7 +280,8 @@ let show_regset : RegSet.t -> string =
   in
   "{ " ^ (RegSet.elements set |> List.map f |> String.concat ", ") ^ " }"
 
-let show_basic_blocks : basic_blocks -> string =
- fun blocks ->
-  let f = function label, ctail -> label ^ ":\n" ^ show_ctail ctail in
+let show_basic_blocks (blocks : basic_blocks) : string =
+  let f = function
+    | label, { body = ctail; _ } -> label ^ ":\n" ^ show_ctail ctail
+  in
   blocks |> List.map f |> String.concat "\n"

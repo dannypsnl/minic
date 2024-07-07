@@ -7,7 +7,7 @@ let rec run : debug:int -> rco_expr -> basic_blocks =
  fun ~debug e ->
   let bb = ref [] in
   let r = explicate_tail ~bb e in
-  let bb = ("entry", r) :: !bb in
+  let bb = ("entry", { name = "entry"; body = r; successor = None }) :: !bb in
   if debug >= 2 then
     traceln "[pass] explicate control\n%s" (show_basic_blocks bb);
   bb
@@ -125,7 +125,7 @@ and create_block : bb:basic_blocks ref -> ctail -> label =
   | Goto label -> label
   | tail ->
       let label = "block" ^ (!bb |> List.length |> Int.to_string) in
-      bb := (label, tail) :: !bb;
+      bb := (label, { name = label; body = tail; successor = None }) :: !bb;
       label
 
 and explicate_atom : atom -> catom =

@@ -28,6 +28,7 @@ let print_block_livesets : asm -> (label * RegSet.t list) list -> unit =
 let rec run : debug:int -> asm -> (label * RegSet.t list) list =
  fun ~debug prog ->
   let block_livesets : (label * RegSet.t list) list ref = ref [] in
+
   Switch.run (fun sw ->
       prog
       |> List.iter (fun (label, instrs) ->
@@ -61,6 +62,7 @@ let rec run : debug:int -> asm -> (label * RegSet.t list) list =
                    analyze_block instrs [ live_before_k_plus_1 ]
                  in
                  block_livesets := (label, live_sets) :: !block_livesets)));
+
   if debug >= 1 then (
     traceln "[pass] liveness analysis";
     print_block_livesets prog !block_livesets);
