@@ -38,7 +38,10 @@ and surface_expr =
   | `Let of string * surface_expr * surface_expr
   | `If of surface_expr * surface_expr * surface_expr
   | (* (cond {clause}+ *)
-    `Cond of (surface_expr * surface_expr) list ]
+    `Cond of (surface_expr * surface_expr) list
+  | `Set of string * surface_expr
+  | `Begin of surface_expr list
+  | `While of surface_expr * surface_expr ]
 [@@deriving show, eq]
 
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
@@ -135,6 +138,11 @@ and ior (d, s1, s2) = Or (d, s1, s2)
 let rec expr_from_sexp : Base.Sexp.t -> surface_expr =
  fun se ->
   match se with
+  | List [ Atom "while"; cond; body ] ->
+      `While (expr_from_sexp cond, expr_from_sexp body)
+  | List [ Atom "set!"; Atom name; expr ] ->
+      `Set (validate_varname name, expr_from_sexp expr)
+  | List (Atom "begin" :: es) -> `Begin (List.map expr_from_sexp es)
   | List (Atom "=" :: rest) -> `Prim (EQ, rest |> List.map expr_from_sexp)
   | List (Atom "<" :: rest) -> `Prim (LT, rest |> List.map expr_from_sexp)
   | List (Atom "<=" :: rest) -> `Prim (LE, rest |> List.map expr_from_sexp)

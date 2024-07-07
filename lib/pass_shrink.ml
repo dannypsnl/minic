@@ -48,6 +48,12 @@ and go : surface_expr -> expr = function
   | `Prim (Sub, a :: b :: es) -> `Prim (Sub, `Prim (Sub, [ a; b ]) :: es) |> go
   | `Let (x, t, e) -> `Let (x, go t, go e)
   | `If (c, t, f) -> `If (go c, go t, go f)
+  | `Set (x, e) -> `Set (x, go e)
+  | `Begin es -> (
+      match List.rev es with
+      | [] -> BadExpr (`Begin []) |> raise
+      | e :: es -> `Begin (List.map go (List.rev es), go e))
+  | `While (c, b) -> `While (go c, go b)
   | `Cond [ (`Var "else", e) ] -> go e
   | `Cond ((c, e) :: clauses) -> `If (go c, go e, go (`Cond clauses))
   | e -> BadExpr e |> raise

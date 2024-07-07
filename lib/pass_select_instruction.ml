@@ -29,6 +29,7 @@ and go : ctail -> instruction list =
   | If _ ->
       traceln "%s" (show_ctail t);
       failwith "TODO"
+  | _ -> failwith "TODO"
 
 and compile_assign : cexpr -> dest -> instruction list =
  fun expression assign_to ->
@@ -49,6 +50,7 @@ and compile_assign : cexpr -> dest -> instruction list =
   | `EQ (e1, e2) -> compare assign_to e1 e2 `Eq
   | `LT (e1, e2) -> compare assign_to e1 e2 `Lt
   | `LE (e1, e2) -> compare assign_to e1 e2 `Le
+  | _ -> failwith "TODO"
 
 and compare assign_to e1 e2 cond =
   let pre, e1' =

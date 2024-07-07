@@ -29,6 +29,9 @@ and go : (string * int) list -> surface_expr -> surface_expr =
                (* `else` is keyword in `cond` *)
                | `Var "else" -> (`Var "else", go env e)
                | _ -> (go env c, go env e)))
+  | `Set (x, e) -> `Set (x, e)
+  | `Begin es -> `Begin es
+  | `While (c, b) -> `While (c, b)
 
 and form_var : string -> int -> string =
  fun name cnt -> name ^ "." ^ Int.to_string cnt
