@@ -27,7 +27,6 @@ let print_block_livesets : asm -> (label * RegSet.t list) list -> unit =
 let rec run ~(debug : int) (prog : asm) : (label * RegSet.t list) list =
   let block_livesets : (label * RegSet.t list) list ref = ref [] in
 
-  (* track that a block is analyzed or not, i.e. we have get its liveset or not *)
   prog
   |> List.iter (fun (_, block) ->
          let _ = analyze_basic_block prog block_livesets block in
@@ -38,6 +37,10 @@ let rec run ~(debug : int) (prog : asm) : (label * RegSet.t list) list =
     print_block_livesets prog !block_livesets);
   !block_livesets
 
+(* The real hard part is that, when a loop structure involved, there will have A -> B -> A.
+
+   In this case, we need to iterate process until stable, so we cannot just invoke `analyze_basic_block` recursively, but have to check when in block_livesets we have a cache, the new result changed or not.
+*)
 and compute_live_before (prog : asm)
     (block_livesets : (label * RegSet.t list) list ref) (successor : label list)
     : RegSet.t =
