@@ -1,6 +1,8 @@
 open Ast
 open Eio
 
+exception TODO
+
 let rec run : debug:int -> rco_expr -> basic_blocks =
  fun ~debug e ->
   let bb = ref [] in
@@ -20,6 +22,16 @@ and explicate_tail : bb:basic_blocks ref -> rco_expr -> ctail =
   | `Let (x, t, body) -> explicate_assign ~bb t x (explicate_tail ~bb body)
   | `If (c, t, f) ->
       explicate_pred ~bb c (explicate_tail ~bb t) (explicate_tail ~bb f)
+  | `Set (x, e) -> explicate_assign ~bb e x (Return `Void)
+  | `Begin (es, e) ->
+      let es = List.map (fun e -> explicate_tail ~bb e) es in
+      let e = explicate_tail ~bb e in
+      List.fold_right (fun stmt e -> Seq (AsStmt stmt, e)) es e
+  | `While (c, b) ->
+      (* idea: generate a block, then a conditional on c, which do b or break *)
+      let loop_block = create_block ~bb (explicate_tail ~bb b) in
+      let leave_block = create_block ~bb (Return `Void) in
+      explicate_pred ~bb c (Goto loop_block) (Goto leave_block)
   | `Unary (Not, a) -> Return (`Not (explicate_atom a))
   | `Binary (Add, a, b) -> Return (`Add (explicate_atom a, explicate_atom b))
   | `Binary (Sub, a, b) -> Return (`Sub (explicate_atom a, explicate_atom b))
@@ -37,6 +49,9 @@ and explicate_assign :
   | `Bool false -> Seq (Assign (x, `CInt 0), cont)
   | `Int i -> Seq (Assign (x, `CInt i), cont)
   | `Var x -> Seq (Assign (x, `CVar x), cont)
+  | `Set (x, e) -> explicate_assign ~bb e x cont
+  | `Begin _ -> raise TODO
+  | `While _ -> raise TODO
   | `Let (x2, t, body) ->
       let body' = explicate_assign ~bb body x cont in
       explicate_assign ~bb t x2 body'
@@ -80,55 +95,29 @@ and explicate_assign :
   | `Binary (LE, a, b) ->
       Seq (Assign (x, `LE (explicate_atom a, explicate_atom b)), cont)
 
-and explicate_pred : bb:basic_blocks ref -> rco_expr -> ctail -> ctail -> ctail
-    =
- fun ~bb e thn els ->
+and explicate_pred ~(bb : basic_blocks ref) (e : rco_expr) (thn : ctail)
+    (els : ctail) : ctail =
   match e with
   | `Bool b -> if b then thn else els
-  | `Var x ->
-      If
-        {
-          cmp = `Eq;
-          a = `CVar x;
-          b = `CInt 1;
-          thn = create_block ~bb thn;
-          els = create_block ~bb els;
-        }
+  | `Var x -> cif ~bb `Eq (`CVar x) (`CInt 1) thn els
   | `Let (x, t, body) ->
       explicate_assign ~bb t x @@ explicate_pred ~bb body thn els
   | `If (c, t, f) ->
       let name = Variable.make "tmp" in
       explicate_assign ~bb (`If (c, t, f)) name
       @@ explicate_pred ~bb (`Var name) thn els
-  | `Unary (Not, a) ->
-      If
-        {
-          cmp = `Eq;
-          a = explicate_atom a;
-          b = `CInt 0;
-          thn = create_block ~bb thn;
-          els = create_block ~bb els;
-        }
+  | `Unary (Not, a) -> cif ~bb `Eq (explicate_atom a) (`CInt 0) thn els
   | `Binary (And, a, b) ->
-      If
-        {
-          cmp = `And;
-          a = explicate_atom a;
-          b = explicate_atom b;
-          thn = create_block ~bb thn;
-          els = create_block ~bb els;
-        }
+      cif ~bb `And (explicate_atom a) (explicate_atom b) thn els
   | `Binary (Or, a, b) ->
-      If
-        {
-          cmp = `Or;
-          a = explicate_atom a;
-          b = explicate_atom b;
-          thn = create_block ~bb thn;
-          els = create_block ~bb els;
-        }
+      cif ~bb `Or (explicate_atom a) (explicate_atom b) thn els
   (* TODO: need type checker to ensure this is impossible *)
   | _ -> failwith @@ "explicate_pred unhandled case: " ^ show_rco_expr e
+
+and cif :
+    bb:basic_blocks ref -> cmp_op -> catom -> catom -> ctail -> ctail -> ctail =
+ fun ~bb op a b thn els ->
+  If { cmp = op; a; b; thn = create_block ~bb thn; els = create_block ~bb els }
 
 and create_block : bb:basic_blocks ref -> ctail -> label =
  fun ~bb c ->

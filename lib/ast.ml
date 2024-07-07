@@ -52,7 +52,7 @@ type ctail =
   | If of { cmp : cmp_op; a : catom; b : catom; thn : label; els : label }
 [@@deriving eq]
 
-and cstmt = Assign of string * cexpr [@@deriving eq]
+and cstmt = Assign of string * cexpr | AsStmt of ctail [@@deriving eq]
 
 and cexpr =
   [ catom
@@ -63,7 +63,8 @@ and cexpr =
   | `Or of catom * catom
   | `EQ of catom * catom
   | `LT of catom * catom
-  | `LE of catom * catom ]
+  | `LE of catom * catom
+  | `Void ]
 [@@deriving eq]
 
 and basic_blocks = (label * ctail) list
