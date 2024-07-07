@@ -15,7 +15,10 @@ type rco_expr =
   | `Binary of bin_op * atom * atom
   | `Unary of un_op * atom
   | `Let of string * rco_expr * rco_expr
-  | `If of rco_expr * rco_expr * rco_expr ]
+  | `If of rco_expr * rco_expr * rco_expr
+  | `Set of string * rco_expr
+  | `Begin of rco_expr list * rco_expr
+  | `While of rco_expr * rco_expr ]
 [@@deriving show, eq]
 
 type expr =
@@ -23,7 +26,10 @@ type expr =
   | `Binary of bin_op * expr * expr
   | `Unary of un_op * expr
   | `Let of string * expr * expr
-  | `If of expr * expr * expr ]
+  | `If of expr * expr * expr
+  | `Set of string * expr
+  | `Begin of expr list * expr
+  | `While of expr * expr ]
 [@@deriving show, eq]
 
 and surface_expr =

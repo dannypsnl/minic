@@ -36,6 +36,9 @@ and rco_expr : expr -> rco_expr =
       |> List.fold_left (fun body (x, e) -> `Let (x, e, body)) (`Unary (op, e'))
   | `If (c, t, f) -> `If (rco_expr c, rco_expr t, rco_expr f)
   | `Let (x, t, body) -> `Let (x, rco_expr t, rco_expr body)
+  | `Set (x, e) -> `Set (x, rco_expr e)
+  | `Begin (es, e) -> `Begin (List.map rco_expr es, rco_expr e)
+  | `While (cond, body) -> `While (rco_expr cond, rco_expr body)
   | `Var x -> `Var x
   | `Int i -> `Int i
   | `Bool b -> `Bool b
