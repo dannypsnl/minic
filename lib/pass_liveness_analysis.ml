@@ -2,21 +2,20 @@ open Ast
 open Eio
 module LabelSet = Set.Make (String)
 
-let rec print_livesets : instruction list -> RegSet.t list -> unit =
- fun prog live_sets ->
+let rec print_livesets (prog : block) (live_sets : RegSet.t list) : unit =
   match live_sets with
   | [] -> ()
   | x :: rest ->
       traceln "%s" (show_regset x);
       print_instrs prog rest
 
-and print_instrs : instruction list -> RegSet.t list -> unit =
- fun prog live_sets ->
-  match prog with
+and print_instrs ({ name; instrs; successor } : block)
+    (live_sets : RegSet.t list) : unit =
+  match instrs with
   | [] -> ()
   | x :: rest ->
       traceln "\t%s" (show_instruction x);
-      print_livesets rest live_sets
+      print_livesets { name; instrs = rest; successor } live_sets
 
 let print_block_livesets : asm -> (label * RegSet.t list) list -> unit =
  fun prog block_livesets ->
@@ -25,13 +24,12 @@ let print_block_livesets : asm -> (label * RegSet.t list) list -> unit =
          traceln "%s:" label;
          print_livesets (List.assoc label prog) livesets)
 
-let rec run : debug:int -> asm -> (label * RegSet.t list) list =
- fun ~debug prog ->
+let rec run ~(debug : int) (prog : asm) : (label * RegSet.t list) list =
   let block_livesets : (label * RegSet.t list) list ref = ref [] in
 
   Switch.run (fun sw ->
       prog
-      |> List.iter (fun (label, instrs) ->
+      |> List.iter (fun (label, { name = _; instrs; successor = _ }) ->
              Fiber.fork ~sw (fun () ->
                  let waiting : LabelSet.t ref =
                    ref

@@ -5,8 +5,13 @@ let rec run : debug:int -> asm -> asm =
  fun ~debug prog ->
   let prog =
     prog
-    |> List.map (fun (label, instrs) ->
-           (label, instrs |> List.map patch_instruction |> List.concat))
+    |> List.map (fun (label, { name; instrs; successor }) ->
+           ( label,
+             {
+               name;
+               instrs = instrs |> List.map patch_instruction |> List.concat;
+               successor;
+             } ))
   in
   if debug >= 2 then traceln "[pass] move biasing\n%s" (show_asm prog);
   prog

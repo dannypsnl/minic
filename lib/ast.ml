@@ -70,7 +70,7 @@ and cexpr =
   | `Void ]
 [@@deriving eq]
 
-and basic_block = { name : label; body : ctail; successor : label option }
+and basic_block = { name : label; body : ctail }
 and basic_blocks = (label * basic_block) list
 
 type reg = [ `Reg of string | `Sp of int | `Var of string ] [@@deriving eq, ord]
@@ -111,8 +111,13 @@ type instruction =
   | Ret
 [@@deriving eq]
 
-and block = label * instruction list
-and asm = block list [@@deriving eq]
+and block = {
+  name : label;
+  instrs : instruction list;
+  successor : label option;
+}
+
+and asm = (label * block) list [@@deriving eq]
 and dest = reg
 and src = [ reg | `Imm of int ] [@@deriving eq]
 
@@ -228,9 +233,9 @@ let show_cmp_op : cmp_op -> string = function
 let rec show_asm : asm -> string =
  fun prog -> prog |> List.map show_block |> String.concat "\n"
 
-and show_block : block -> string =
- fun (label, instrs) ->
-  label ^ ":\n"
+and show_block : label * block -> string =
+ fun (_, { name; instrs; successor = _ }) ->
+  name ^ ":\n"
   ^ (instrs
     |> List.map (fun i -> "\t" ^ show_instruction i)
     |> String.concat "\n")

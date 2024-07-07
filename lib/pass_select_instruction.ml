@@ -4,17 +4,23 @@ open Eio
 let rec run : debug:int -> basic_blocks -> asm =
  fun ~debug bb ->
   let prog =
-    bb |> List.map (fun (label, { body = tail; _ }) -> (label, go tail))
+    bb
+    |> List.map (fun (label, { name; body = tail }) ->
+           let s = ref None in
+           let instrs = go s tail in
+           (label, { name; instrs; successor = !s }))
   in
   if debug >= 2 then traceln "[pass] select instructions\n%s" (show_asm prog);
   prog
 
-and go : ctail -> instruction list =
- fun t ->
+and go : label option ref -> ctail -> instruction list =
+ fun successor t ->
   match t with
   | Return e -> compile_assign e (`Reg "x0") @ [ Ret ]
-  | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ go c
-  | Goto label -> [ B label ]
+  | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ go successor c
+  | Goto label ->
+      successor := Some label;
+      [ B label ]
   | If { cmp = `Eq; a = `CVar x; b = `CInt 1; thn; els } ->
       [ CBNZ (`Var x, thn); B els ]
   | If { cmp = `Eq; a = `CInt i; b = `CInt 1; thn; els } ->

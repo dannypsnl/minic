@@ -12,10 +12,15 @@ let rec run : debug:int -> asm -> (label * Graph.t) list -> asm =
   let color_map : reg ColorM.t = ColorM.create 100 in
   let prog =
     prog
-    |> List.map (fun (label, instrs) ->
+    |> List.map (fun (label, { name; instrs; successor }) ->
            ( label,
-             block_allocate color_map instrs
-               (List.assoc label block_graphs |> Graph.verticies) ))
+             {
+               name;
+               instrs =
+                 block_allocate color_map instrs
+                   (List.assoc label block_graphs |> Graph.verticies);
+               successor;
+             } ))
   in
   if debug >= 2 then traceln "[pass] register allocation\n%s" (show_asm prog);
   prog

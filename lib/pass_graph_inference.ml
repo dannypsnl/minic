@@ -7,7 +7,7 @@ let rec run :
  fun ~debug prog block_live_sets ->
   let block_graphs =
     prog
-    |> List.map (fun (label, instrs) ->
+    |> List.map (fun (label, { instrs; _ }) ->
            (label, block_graph instrs (List.assoc label block_live_sets)))
   in
   if debug >= 1 then (
