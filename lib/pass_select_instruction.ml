@@ -6,32 +6,38 @@ let rec run : debug:int -> basic_blocks -> asm =
   let prog =
     bb
     |> List.map (fun (label, { name; body = tail }) ->
-           let s = ref None in
+           let s = ref [] in
            let instrs = go s tail in
            (label, { name; instrs; successor = !s }))
   in
   if debug >= 2 then traceln "[pass] select instructions\n%s" (show_asm prog);
   prog
 
-and go : label option ref -> ctail -> instruction list =
+and go : label list ref -> ctail -> instruction list =
  fun successor t ->
   match t with
   | Return e -> compile_assign e (`Reg "x0") @ [ Ret ]
   | Seq (Assign (x, e), c) -> compile_assign e (`Var x) @ go successor c
   | Goto label ->
-      successor := Some label;
+      successor := [ label ];
       [ B label ]
   | If { cmp = `Eq; a = `CVar x; b = `CInt 1; thn; els } ->
+      successor := [ thn; els ];
       [ CBNZ (`Var x, thn); B els ]
   | If { cmp = `Eq; a = `CInt i; b = `CInt 1; thn; els } ->
+      successor := [ thn; els ];
       if i = 1 then [ B thn ] else [ B els ]
   | If { cmp = `Eq; a = `CVar x; b = `CInt 0; thn; els } ->
+      successor := [ thn; els ];
       [ CBZ (`Var x, thn); B els ]
   | If { cmp = `Eq; a = `CInt i; b = `CInt 0; thn; els } ->
+      successor := [ thn; els ];
       if i = 0 then [ B thn ] else [ B els ]
   | If { cmp = `And; a = `CInt a; b = `CInt b; thn; els } ->
+      successor := [ thn; els ];
       if a = 1 && b = 1 then [ B thn ] else [ B els ]
   | If { cmp = `And; a = `CVar x; b = e2; thn; els } ->
+      successor := [ thn; els ];
       [ iand (`Var x, Reg.to_src (`Var x), compile_atom e2) ]
       @ [ CBNZ (`Var x, thn); B els ]
   | If _ ->

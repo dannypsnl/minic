@@ -111,12 +111,7 @@ type instruction =
   | Ret
 [@@deriving eq]
 
-and block = {
-  name : label;
-  instrs : instruction list;
-  successor : label option;
-}
-
+and block = { name : label; instrs : instruction list; successor : label list }
 and asm = (label * block) list [@@deriving eq]
 and dest = reg
 and src = [ reg | `Imm of int ] [@@deriving eq]

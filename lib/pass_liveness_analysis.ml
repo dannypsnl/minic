@@ -27,46 +27,41 @@ let print_block_livesets : asm -> (label * RegSet.t list) list -> unit =
 let rec run ~(debug : int) (prog : asm) : (label * RegSet.t list) list =
   let block_livesets : (label * RegSet.t list) list ref = ref [] in
 
-  Switch.run (fun sw ->
-      prog
-      |> List.iter (fun (label, { name = _; instrs; successor = _ }) ->
-             Fiber.fork ~sw (fun () ->
-                 let waiting : LabelSet.t ref =
-                   ref
-                     (instrs
-                     |> List.fold_left
-                          (fun acc instr ->
-                            match instr with
-                            | B label -> LabelSet.add label acc
-                            | CBNZ (_, label) -> LabelSet.add label acc
-                            | CBZ (_, label) -> LabelSet.add label acc
-                            | _ -> acc)
-                          LabelSet.empty)
-                 in
-                 let others_livesets : RegSet.t list list ref = ref [] in
-                 while not (LabelSet.is_empty !waiting) do
-                   let lookup = !waiting |> LabelSet.elements |> List.hd in
-                   match List.assoc_opt lookup !block_livesets with
-                   | Some livesets ->
-                       waiting := LabelSet.remove lookup !waiting;
-                       others_livesets := livesets :: !others_livesets
-                   | None -> Fiber.yield ()
-                 done;
-                 let live_before_k_plus_1 : RegSet.t =
-                   List.map List.hd !others_livesets
-                   |> List.fold_left RegSet.union RegSet.empty
-                 in
-                 let live_sets =
-                   analyze_block instrs [ live_before_k_plus_1 ]
-                 in
-                 block_livesets := (label, live_sets) :: !block_livesets)));
+  (* track that a block is analyzed or not, i.e. we have get its liveset or not *)
+  prog
+  |> List.iter (fun (_, block) ->
+         let _ = analyze_basic_block prog block_livesets block in
+         ());
 
   if debug >= 1 then (
     traceln "[pass] liveness analysis";
     print_block_livesets prog !block_livesets);
   !block_livesets
 
-and analyze_block : instruction list -> RegSet.t list -> RegSet.t list =
+and analyze_basic_block (prog : asm)
+    (block_livesets : (label * RegSet.t list) list ref)
+    ({ name = label; instrs; successor } : block) : RegSet.t list =
+  match successor with
+  | [] ->
+      (* have no dependencies, so we can directly analysis the current one *)
+      let live_before_k_plus_1 : RegSet.t = RegSet.empty in
+      let live_sets = analyze_instrs instrs [ live_before_k_plus_1 ] in
+      block_livesets := (label, live_sets) :: !block_livesets;
+      live_sets
+  | ss ->
+      (* have dependencies, so we do them first *)
+      let succ_blocks = ss |> List.map (fun label -> List.assoc label prog) in
+      let live_sets =
+        List.map (analyze_basic_block prog block_livesets) succ_blocks
+      in
+      let live_before_k_plus_1 : RegSet.t =
+        List.map List.hd live_sets |> List.fold_left RegSet.union RegSet.empty
+      in
+      let live_sets = analyze_instrs instrs [ live_before_k_plus_1 ] in
+      block_livesets := (label, live_sets) :: !block_livesets;
+      live_sets
+
+and analyze_instrs : instruction list -> RegSet.t list -> RegSet.t list =
  fun instrs live_sets -> List.fold_right analyze_instr instrs live_sets
 
 and analyze_instr : instruction -> RegSet.t list -> RegSet.t list =
