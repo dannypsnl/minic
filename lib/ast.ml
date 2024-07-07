@@ -188,8 +188,10 @@ let rec show_ctail : ctail -> string = function
 
 and show_cstmt : cstmt -> string = function
   | Assign (x, e) -> x ^ " = " ^ show_cexpr e
+  | AsStmt e -> "run: " ^ show_ctail e
 
 and show_cexpr : cexpr -> string = function
+  | `Void -> "#void"
   | `CInt i -> Int.to_string i
   | `CVar x -> x
   | `Not a -> Format.sprintf "not %s " (show_catom a)
