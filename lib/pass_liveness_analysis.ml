@@ -38,28 +38,29 @@ let rec run ~(debug : int) (prog : asm) : (label * RegSet.t list) list =
     print_block_livesets prog !block_livesets);
   !block_livesets
 
-and analyze_basic_block (prog : asm)
-    (block_livesets : (label * RegSet.t list) list ref)
-    ({ name = label; instrs; successor } : block) : RegSet.t list =
+and compute_live_before (prog : asm)
+    (block_livesets : (label * RegSet.t list) list ref) (successor : label list)
+    : RegSet.t =
   match successor with
-  | [] ->
-      (* have no dependencies, so we can directly analysis the current one *)
-      let live_before_k_plus_1 : RegSet.t = RegSet.empty in
-      let live_sets = analyze_instrs instrs [ live_before_k_plus_1 ] in
-      block_livesets := (label, live_sets) :: !block_livesets;
-      live_sets
+  (* have no dependencies then live before is empty *)
+  | [] -> RegSet.empty
+  (* have dependencies, so we collect their result *)
   | ss ->
-      (* have dependencies, so we do them first *)
       let succ_blocks = ss |> List.map (fun label -> List.assoc label prog) in
       let live_sets =
         List.map (analyze_basic_block prog block_livesets) succ_blocks
       in
-      let live_before_k_plus_1 : RegSet.t =
-        List.map List.hd live_sets |> List.fold_left RegSet.union RegSet.empty
-      in
-      let live_sets = analyze_instrs instrs [ live_before_k_plus_1 ] in
-      block_livesets := (label, live_sets) :: !block_livesets;
-      live_sets
+      List.map List.hd live_sets |> List.fold_left RegSet.union RegSet.empty
+
+and analyze_basic_block (prog : asm)
+    (block_livesets : (label * RegSet.t list) list ref)
+    ({ name = label; instrs; successor } : block) : RegSet.t list =
+  let live_before_k_plus_1 =
+    compute_live_before prog block_livesets successor
+  in
+  let live_sets = analyze_instrs instrs [ live_before_k_plus_1 ] in
+  block_livesets := (label, live_sets) :: !block_livesets;
+  live_sets
 
 and analyze_instrs : instruction list -> RegSet.t list -> RegSet.t list =
  fun instrs live_sets -> List.fold_right analyze_instr instrs live_sets
