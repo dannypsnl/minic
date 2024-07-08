@@ -3,8 +3,7 @@ open Eio
 
 exception TODO
 
-let rec run : debug:int -> rco_expr -> basic_blocks =
- fun ~debug e ->
+let rec run ~(debug : int) (e : rco_expr) : basic_blocks =
   let bb = ref [] in
   let r = explicate_tail ~bb e in
   let bb = ("entry", { name = "entry"; body = r }) :: !bb in
@@ -12,8 +11,7 @@ let rec run : debug:int -> rco_expr -> basic_blocks =
     traceln "[pass] explicate control\n%s" (show_basic_blocks bb);
   bb
 
-and explicate_tail : bb:basic_blocks ref -> rco_expr -> ctail =
- fun ~bb e ->
+and explicate_tail ~(bb : basic_blocks ref) (e : rco_expr) : ctail =
   match e with
   | `Bool true -> Return (`CInt 1)
   | `Bool false -> Return (`CInt 0)
@@ -28,6 +26,7 @@ and explicate_tail : bb:basic_blocks ref -> rco_expr -> ctail =
       let e = explicate_tail ~bb e in
       List.fold_right (fun stmt e -> Seq (AsStmt stmt, e)) es e
   | `While (c, b) ->
+      (* TODO: undone yet *)
       (* idea: generate a block, then a conditional on c, which do b or break *)
       let loop_block = create_block ~bb (explicate_tail ~bb b) in
       let leave_block = create_block ~bb (Return `Void) in
@@ -41,17 +40,19 @@ and explicate_tail : bb:basic_blocks ref -> rco_expr -> ctail =
   | `Binary (LT, a, b) -> Return (`LT (explicate_atom a, explicate_atom b))
   | `Binary (LE, a, b) -> Return (`LE (explicate_atom a, explicate_atom b))
 
-and explicate_assign :
-    bb:basic_blocks ref -> rco_expr -> string -> ctail -> ctail =
- fun ~bb e x cont ->
+(* In this function, we assign `e` to `x`, then do `cont` computation.
+ *)
+and explicate_assign ~(bb : basic_blocks ref) (e : rco_expr) (x : string)
+    (cont : ctail) : ctail =
   match e with
   | `Bool true -> Seq (Assign (x, `CInt 1), cont)
   | `Bool false -> Seq (Assign (x, `CInt 0), cont)
   | `Int i -> Seq (Assign (x, `CInt i), cont)
   | `Var x -> Seq (Assign (x, `CVar x), cont)
-  | `Set (x, e) -> explicate_assign ~bb e x cont
-  | `Begin _ -> raise TODO
-  | `While _ -> raise TODO
+  | `Begin (es, e) ->
+      let es = List.map (fun e -> explicate_tail ~bb e) es in
+      let e = explicate_assign ~bb e x cont in
+      List.fold_right (fun stmt e -> Seq (AsStmt stmt, e)) es e
   | `Let (x2, t, body) ->
       let body' = explicate_assign ~bb body x cont in
       explicate_assign ~bb t x2 body'
@@ -94,10 +95,13 @@ and explicate_assign :
       Seq (Assign (x, `LT (explicate_atom a, explicate_atom b)), cont)
   | `Binary (LE, a, b) ->
       Seq (Assign (x, `LE (explicate_atom a, explicate_atom b)), cont)
+  | _ ->
+      (* while and set! are both invalid assign *)
+      failwith @@ "explicate_assign unhandled case: " ^ show_rco_expr e
 
-and explicate_pred ~(bb : basic_blocks ref) (e : rco_expr) (thn : ctail)
+and explicate_pred ~(bb : basic_blocks ref) (pred : rco_expr) (thn : ctail)
     (els : ctail) : ctail =
-  match e with
+  match pred with
   | `Bool b -> if b then thn else els
   | `Var x -> cif ~bb `Eq (`CVar x) (`CInt 1) thn els
   | `Let (x, t, body) ->
@@ -112,15 +116,13 @@ and explicate_pred ~(bb : basic_blocks ref) (e : rco_expr) (thn : ctail)
   | `Binary (Or, a, b) ->
       cif ~bb `Or (explicate_atom a) (explicate_atom b) thn els
   (* TODO: need type checker to ensure this is impossible *)
-  | _ -> failwith @@ "explicate_pred unhandled case: " ^ show_rco_expr e
+  | _ -> failwith @@ "explicate_pred unhandled case: " ^ show_rco_expr pred
 
-and cif :
-    bb:basic_blocks ref -> cmp_op -> catom -> catom -> ctail -> ctail -> ctail =
- fun ~bb op a b thn els ->
+and cif ~(bb : basic_blocks ref) (op : cmp_op) (a : catom) (b : catom)
+    (thn : ctail) (els : ctail) : ctail =
   If { cmp = op; a; b; thn = create_block ~bb thn; els = create_block ~bb els }
 
-and create_block : bb:basic_blocks ref -> ctail -> label =
- fun ~bb c ->
+and create_block ~(bb : basic_blocks ref) (c : ctail) : label =
   match c with
   | Goto label -> label
   | tail ->
@@ -128,8 +130,7 @@ and create_block : bb:basic_blocks ref -> ctail -> label =
       bb := (label, { name = label; body = tail }) :: !bb;
       label
 
-and explicate_atom : atom -> catom =
- fun e ->
+and explicate_atom (e : atom) : catom =
   match e with
   | `Bool true -> `CInt 1
   | `Bool false -> `CInt 0
