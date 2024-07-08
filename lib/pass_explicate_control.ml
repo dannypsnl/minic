@@ -1,8 +1,6 @@
 open Ast
 open Eio
 
-exception TODO
-
 let rec run ~(debug : int) (e : rco_expr) : basic_blocks =
   let bb = ref [] in
   let r = explicate_tail ~bb e in
