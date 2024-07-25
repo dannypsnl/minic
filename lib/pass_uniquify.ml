@@ -13,7 +13,8 @@ and go : (string * int) list -> surface_expr -> surface_expr =
       match List.assoc_opt x env with
       | Some cnt -> `Var (form_var x cnt)
       | None -> raise (UnboundVariable x))
-  | `Prim (op, es) -> `Prim (op, Base.List.map es ~f:(go env))
+  | `UPrim (op, a) -> `UPrim (op, go env a)
+  | `Prim (op, a, b) -> `Prim (op, go env a, go env b)
   | `Let (x, t, body) ->
       let new_cnt =
         match List.assoc_opt x env with Some cnt -> cnt + 1 | None -> 1

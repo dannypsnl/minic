@@ -1,4 +1,4 @@
-(lang dune 3.9)
+(lang dune 3.14)
 
 (name minic)
 
@@ -15,6 +15,8 @@
 
 (documentation https://github.com/dannypsnl/minic)
 
+(using menhir 3.0)
+
 (package
  (name minic)
  (synopsis "A short synopsis")
@@ -23,7 +25,10 @@
   ocaml
   dune
   core
+  (menhir
+   (>= 20211230))
   (alcotest :with-test)
+  asai
   eio
   eio_main
   ppx_deriving

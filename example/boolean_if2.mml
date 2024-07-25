@@ -1,0 +1,3 @@
+let x := false in
+let y := if x then 10 else 20 in
+y - 5

@@ -11,9 +11,11 @@ doc: "https://github.com/dannypsnl/minic"
 bug-reports: "https://github.com/dannypsnl/minic/issues"
 depends: [
   "ocaml"
-  "dune" {>= "3.9"}
+  "dune" {>= "3.14"}
   "core"
+  "menhir" {>= "20211230"}
   "alcotest" {with-test}
+  "asai"
   "eio"
   "eio_main"
   "ppx_deriving"

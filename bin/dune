@@ -3,4 +3,4 @@
  (name main)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.eq))
- (libraries minic eio eio_main))
+ (libraries minic eio eio_main asai))

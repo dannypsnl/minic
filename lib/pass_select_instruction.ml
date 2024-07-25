@@ -1,5 +1,6 @@
 open Ast
 open Eio
+open AArch64
 
 let rec run : debug:int -> basic_blocks -> asm =
  fun ~debug bb ->

@@ -2,4 +2,4 @@
  (name minic)
  (deps
   (glob_files_rec ../example/*))
- (libraries minic alcotest eio eio_main))
+ (libraries minic alcotest eio eio_main asai))

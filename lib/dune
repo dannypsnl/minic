@@ -1,3 +1,8 @@
+(ocamllex Lexer)
+
+(menhir
+ (modules Grammar))
+
 (library
  (name minic)
  (inline_tests)
@@ -8,4 +13,4 @@
    ppx_deriving.show
    ppx_deriving.eq
    ppx_deriving.ord))
- (libraries eio eio_main parsexp_io))
+ (libraries eio eio_main parsexp_io asai))

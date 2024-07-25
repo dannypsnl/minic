@@ -1,5 +1,4 @@
-open Ast
-open Eio
+open AArch64
 
 let ( / ) = Eio.Path.( / )
 
@@ -29,11 +28,9 @@ let compile_binary ~proc_mgr ~cwd prog =
   output
 
 let compile ~debug ~proc_mgr ~cwd ~filename =
-  let e = Parsexp_io.load_conv_exn Single ~filename (fun e -> e) in
-  if debug >= 3 then
-    traceln "[stage0] s-expression\n%s" ([%derive.show: Base.Sexp.t] e);
+  let e = Parser.parse_file filename in
   let prog =
-    e |> expr_from_sexp |> Pass_uniquify.run |> Pass_shrink.run ~debug
+    e |> Pass_uniquify.run |> Pass_shrink.run ~debug
     |> Pass_remove_complex_operands.run ~debug
     |> Pass_explicate_control.run ~debug
     |> Pass_select_instruction.run ~debug

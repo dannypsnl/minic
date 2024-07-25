@@ -1,5 +1,6 @@
 open Ast
 open Eio
+open AArch64
 module LabelSet = Set.Make (String)
 
 let rec print_livesets (prog : block) (live_sets : RegSet.t list) : unit =

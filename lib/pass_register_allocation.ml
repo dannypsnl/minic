@@ -1,6 +1,7 @@
 open Ast
 open Graph
 open Eio
+open AArch64
 
 exception NotFound of string
 exception ShouldFilterOut

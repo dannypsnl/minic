@@ -1,0 +1,6 @@
+let x := true in
+let y := false in
+if x && y then
+  10
+else
+  20
