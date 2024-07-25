@@ -25,14 +25,8 @@ and go : surface_expr -> expr = function
   | `Int i -> `Int i
   | `Var v -> `Var v
   | `Bool b -> `Bool b
-  | `UPrim (Not, a) -> `Unary (Not, go a)
-  | `Prim (EQ, a, b) -> `Binary (EQ, go a, go b)
-  | `Prim (LT, a, b) -> `Binary (LT, go a, go b)
-  | `Prim (LE, a, b) -> `Binary (LE, go a, go b)
-  | `Prim (Add, a, b) -> `Binary (Add, go a, go b)
-  | `Prim (And, a, b) -> `Binary (And, go a, go b)
-  | `Prim (Or, a, b) -> `Binary (Or, go a, go b)
-  | `Prim (Sub, a, b) -> `Binary (Sub, go a, go b)
+  | `UPrim (op, a) -> `Unary (op, go a)
+  | `Prim (op, a, b) -> `Binary (op, go a, go b)
   | `Let (x, t, e) -> `Let (x, go t, go e)
   | `If (c, t, f) -> `If (go c, go t, go f)
   | `Set (x, e) -> `Set (x, go e)
@@ -41,4 +35,3 @@ and go : surface_expr -> expr = function
       | [] -> BadExpr (`Begin []) |> raise
       | e :: es -> `Begin (List.map go (List.rev es), go e))
   | `While (c, b) -> `While (go c, go b)
-  | e -> BadExpr e |> raise

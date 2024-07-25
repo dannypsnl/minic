@@ -22,14 +22,6 @@ and go : (string * int) list -> surface_expr -> surface_expr =
       let env' = (x, new_cnt) :: env in
       `Let (form_var x new_cnt, go env t, go env' body)
   | `If (c, t, f) -> `If (go env c, go env t, go env f)
-  | `Cond cases ->
-      `Cond
-        (cases
-        |> List.map (fun (c, e) ->
-               match c with
-               (* `else` is keyword in `cond` *)
-               | `Var "else" -> (`Var "else", go env e)
-               | _ -> (go env c, go env e)))
   | `Set (x, e) -> `Set (x, e)
   | `Begin es -> `Begin es
   | `While (c, b) -> `While (c, b)
