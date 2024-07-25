@@ -41,6 +41,4 @@ and go : surface_expr -> expr = function
       | [] -> BadExpr (`Begin []) |> raise
       | e :: es -> `Begin (List.map go (List.rev es), go e))
   | `While (c, b) -> `While (go c, go b)
-  | `Cond [ (`Var "else", e) ] -> go e
-  | `Cond ((c, e) :: clauses) -> `If (go c, go e, go (`Cond clauses))
   | e -> BadExpr e |> raise

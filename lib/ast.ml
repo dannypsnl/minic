@@ -26,8 +26,6 @@ and surface_expr =
   | `UPrim of un_op * surface_expr
   | `Let of string * surface_expr * surface_expr
   | `If of surface_expr * surface_expr * surface_expr
-  | (* (cond {clause}+ *)
-    `Cond of (surface_expr * surface_expr) list
   | `Set of string * surface_expr
   | `Begin of surface_expr list
   | `While of surface_expr * surface_expr ]

@@ -48,9 +48,6 @@ let () =
           test_case "(and x y)" `Quick
           @@ test_example_if ~filename:"../example/boolean2.mml"
                ~expected_output:"0";
-          test_case "cond form" `Quick
-          @@ test_example_if ~filename:"../example/cond.mml"
-               ~expected_output:"34";
         ] );
       ( "arithmetic",
         [
