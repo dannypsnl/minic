@@ -1,5 +1,6 @@
 open Ast
 open Eio
+open RcoExpr
 
 let rec run : debug:int -> expr -> rco_expr =
  fun ~debug e ->

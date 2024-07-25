@@ -10,17 +10,6 @@ type op = EQ | LT | LE | Add | Sub | Not | And | Or [@@deriving show, eq]
 type bin_op = EQ | LT | LE | Add | Sub | And | Or [@@deriving show, eq]
 type un_op = Not [@@deriving show, eq]
 
-type rco_expr =
-  [ atom
-  | `Binary of bin_op * atom * atom
-  | `Unary of un_op * atom
-  | `Let of string * rco_expr * rco_expr
-  | `If of rco_expr * rco_expr * rco_expr
-  | `Set of string * rco_expr
-  | `Begin of rco_expr list * rco_expr
-  | `While of rco_expr * rco_expr ]
-[@@deriving show, eq]
-
 type expr =
   [ atom
   | `Binary of bin_op * expr * expr

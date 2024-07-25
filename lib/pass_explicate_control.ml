@@ -1,5 +1,6 @@
 open Ast
 open Eio
+open RcoExpr
 
 let rec run ~(debug : int) (e : rco_expr) : basic_blocks =
   let bb = ref [] in
