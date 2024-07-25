@@ -1,5 +1,5 @@
 let x := 0 in
-while x < 10
+while (x < 10)
   x := x + 1
 end;
 x

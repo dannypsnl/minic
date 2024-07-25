@@ -27,7 +27,7 @@ and surface_expr =
   | `Let of string * surface_expr * surface_expr
   | `If of surface_expr * surface_expr * surface_expr
   | `Set of string * surface_expr
-  | `Begin of surface_expr list
+  | `Seq of surface_expr * surface_expr
   | `While of surface_expr * surface_expr ]
 [@@deriving show, eq]
 

@@ -30,8 +30,16 @@ and go : surface_expr -> expr = function
   | `Let (x, t, e) -> `Let (x, go t, go e)
   | `If (c, t, f) -> `If (go c, go t, go f)
   | `Set (x, e) -> `Set (x, go e)
-  | `Begin es -> (
-      match List.rev es with
-      | [] -> BadExpr (`Begin []) |> raise
-      | e :: es -> `Begin (List.map go (List.rev es), go e))
+  | `Seq (a, b) -> (
+      let s = gol (`Seq (a, b)) in
+      match List.rev s with
+      | [] -> BadExpr (`Seq (a, b)) |> raise
+      | hd :: tl -> `Begin (List.rev tl, hd))
   | `While (c, b) -> `While (go c, go b)
+
+and gol : surface_expr -> expr list = function
+  | `Seq (a, b) ->
+      let a = gol a in
+      let b = gol b in
+      List.append a b
+  | e -> [ go e ]

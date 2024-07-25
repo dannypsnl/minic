@@ -23,7 +23,7 @@ and go : (string * int) list -> surface_expr -> surface_expr =
       `Let (form_var x new_cnt, go env t, go env' body)
   | `If (c, t, f) -> `If (go env c, go env t, go env f)
   | `Set (x, e) -> `Set (x, e)
-  | `Begin es -> `Begin es
+  | `Seq (a, b) -> `Seq (a, b)
   | `While (c, b) -> `While (c, b)
 
 and form_var : string -> int -> string =

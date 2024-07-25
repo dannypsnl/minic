@@ -27,9 +27,12 @@ rule token =
   | "if" { return lexbuf @@ Grammar.IF }
   | "then" { return lexbuf @@ Grammar.THEN }
   | "else" { return lexbuf @@ Grammar.ELSE }
+  | "while" { return lexbuf @@ Grammar.WHILE }
+  | "end" { return lexbuf @@ Grammar.END }
   | ident { return lexbuf @@ ident (Lexing.lexeme lexbuf) }
   | int { return lexbuf @@ int (Lexing.lexeme lexbuf) }
   | ":=" { return lexbuf @@ Grammar.ASSIGN }
+  | ";" { return lexbuf @@ Grammar.SEMICOLON }
   | "==" { return lexbuf @@ Grammar.EQ }
   | "<" { return lexbuf @@ Grammar.LT }
   | "<=" { return lexbuf @@ Grammar.LE }

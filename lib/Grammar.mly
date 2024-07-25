@@ -13,8 +13,11 @@
        TRUE
        FALSE
        IN
+       WHILE
+       END
 %token LPAREN RPAREN
        ASSIGN
+       SEMICOLON
        EQ
        LT
        LE
@@ -47,12 +50,14 @@ let factor :=
   | FALSE; { `Bool false }
   | n=INT; { `Int n }
   | n=IDENT; { `Var n }
+  | a=tm; SEMICOLON; b=tm; { `Seq (a, b) }
   | parens(tm)
 let tm :=
   | op=unary_op; e=tm; { `UPrim (op, e) }
   | l=factor; op=op; r=tm; { `Prim (op, l, r) }
   | LET; n=IDENT; ASSIGN; e=tm; IN; b=tm; { `Let (n, e, b) }
   | IF; p=tm; THEN; t=tm; ELSE; e=tm; { `If (p, t, e) }
+  | WHILE; p=tm; b=tm; END; { `While (p, b) }
   | n=IDENT; ASSIGN; e=tm; { `Set (n, e) }
   | factor
 
