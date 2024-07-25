@@ -15,7 +15,7 @@ opam install --deps-only --with-test .
 To use this project to learn how to make a compiler, read the followings by order
 
 1. [Arithmetic compilation](./doc/arith.md)
-2. [Boolean](./doc/bool.md)
+2. [Boolean and Control flow](./doc/bool.md)
 
 ## Usage
 
