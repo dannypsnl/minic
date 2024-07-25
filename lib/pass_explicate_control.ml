@@ -98,7 +98,9 @@ and explicate_assign ~(bb : basic_blocks ref) (e : rco_expr) (x : string)
       Seq (Assign (x, `LE (explicate_atom a, explicate_atom b)), cont)
   | _ ->
       (* while and set! are both invalid assign *)
-      failwith @@ "explicate_assign unhandled case: " ^ show_rco_expr e
+      Reporter.fatalf Compile_error "explicate_assign unhandled case: %s" @@ show_rco_expr e
+
+
 
 and explicate_pred ~(bb : basic_blocks ref) (pred : rco_expr) (thn : ctail)
     (els : ctail) : ctail =
@@ -117,7 +119,7 @@ and explicate_pred ~(bb : basic_blocks ref) (pred : rco_expr) (thn : ctail)
   | `Binary (Or, a, b) ->
       cif ~bb `Or (explicate_atom a) (explicate_atom b) thn els
   (* TODO: need type checker to ensure this is impossible *)
-  | _ -> failwith @@ "explicate_pred unhandled case: " ^ show_rco_expr pred
+  | _ -> Reporter.fatalf Compile_error "explicate_pred unhandled case: %s" @@ show_rco_expr pred
 
 and cif ~(bb : basic_blocks ref) (op : cmp_op) (a : catom) (b : catom)
     (thn : ctail) (els : ctail) : ctail =
