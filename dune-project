@@ -33,9 +33,7 @@
   eio_main
   ppx_deriving
   ppx_inline_test
-  ppx_expect
-  parsexp
-  parsexp_io)
+  ppx_expect)
  (tags
   (topics "to describe" your project)))
 

@@ -13,4 +13,4 @@
    ppx_deriving.show
    ppx_deriving.eq
    ppx_deriving.ord))
- (libraries eio eio_main parsexp_io asai))
+ (libraries eio eio_main asai))
