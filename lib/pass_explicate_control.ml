@@ -58,20 +58,22 @@ and explicate_assign ~(bb : basic_blocks ref) (e : rco_expr) (x : string)
   | `If (c, t, f) ->
       (* Consider code like
 
-          let x := if c then 1 else 2;
-            x + 10
+          let x := if c then 1 else 2 in
+          x + 10
 
          This code shouldn't be transformed to
 
-          if c
-            then let x := 1 in x + 10
-            else let x := 2 in x + 10
+          if c then
+            let x := 1 in x + 10
+          else
+            let x := 2 in x + 10
 
          which duplicate the code `x + 10` twice. Instead, we should create a new block
 
-          if c
-            then x := 1; goto L0
-            else x := 2; goto L0;
+          if c then
+            x := 1; goto L0
+          else
+            x := 2; goto L0;
           L0:
             x + 10;
       *)
