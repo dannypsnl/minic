@@ -22,7 +22,7 @@ dune runtest
 , and of course, check the example by the command below
 
 ```shell
-dune exec minic -- ./example/hello.ss
+dune exec minic -- ./example/hello.mml
 ```
 
 > **main** branch is not stable, there might have some example cannot work, if you're a learner then goes to [Release](https://github.com/dannypsnl/minic/releases) and pick a branch first.
