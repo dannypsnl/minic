@@ -13,7 +13,7 @@ let digit = ['0'-'9']
 let int = '-'? digit+
 
 let alpha = ['a'-'z' 'A'-'Z']
-let ident = (alpha) (alpha|digit|'_'|'-')*
+let ident = (alpha) (alpha|digit|'_'|'-'|'?')*
 let whitespace = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 

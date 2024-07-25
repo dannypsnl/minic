@@ -60,21 +60,6 @@ and cexpr =
 and basic_block = { name : label; body : ctail }
 and basic_blocks = (label * basic_block) list
 
-let rec validate_varname : string -> string =
- fun x -> String.map validate_char x
-
-and validate_char : char -> char =
- fun c ->
-  match CharSet.find_opt c valid_charset with
-  | None -> raise (InvalidCharInVariable c)
-  | Some _ -> c
-
-and valid_charset : CharSet.t =
-  CharSet.add_seq
-    (String.to_seq
-       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-=+-*/<>?!")
-    CharSet.empty
-
 let rec show_ctail : ctail -> string = function
   | Goto l -> "goto " ^ l
   | If { cmp; a; b; thn; els } ->
