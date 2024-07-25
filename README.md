@@ -10,6 +10,13 @@ Before start developing, you will need to run below code to install dependencies
 opam install --deps-only --with-test .
 ```
 
+## Learning
+
+To use this project to learn how to make a compiler, read the followings by order
+
+1. [Arithmetic compilation](./doc/arith.md)
+2. [Boolean](./doc/bool.md)
+
 ## Usage
 
 Nows, you can run build, test
