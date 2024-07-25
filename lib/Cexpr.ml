@@ -1,4 +1,3 @@
-
 type catom = [ `CInt of int | `CVar of string ] [@@deriving eq]
 type label = string [@@deriving eq]
 type cmp_op = [ `Eq | `Ge | `Gt | `Le | `Lt | `And | `Or ] [@@deriving show, eq]
