@@ -17,19 +17,17 @@ and explicate_tail ~(bb : basic_blocks ref) (e : rco_expr) : ctail =
   | `Int i -> Return (`CInt i)
   | `Var x -> Return (`CVar x)
   | `Let (x, t, body) -> explicate_assign ~bb t x (explicate_tail ~bb body)
-  | `If (c, t, f) ->
-      explicate_pred ~bb c (explicate_tail ~bb t) (explicate_tail ~bb f)
+  | `If (condition, thn, els) ->
+      explicate_pred ~bb condition (explicate_tail ~bb thn)
+        (explicate_tail ~bb els)
   | `Set (x, e) -> explicate_assign ~bb e x (Return `Void)
   | `Begin (es, e) ->
       let es = List.map (fun e -> explicate_tail ~bb e) es in
       let e = explicate_tail ~bb e in
       List.fold_right (fun stmt e -> Seq (AsStmt stmt, e)) es e
-  | `While (c, b) ->
-      (* TODO: undone yet *)
-      (* idea: generate a block, then a conditional on c, which do b or break *)
-      let loop_block = create_block ~bb (explicate_tail ~bb b) in
+  | `While (condition, body) ->
       let leave_block = create_block ~bb (Return `Void) in
-      explicate_pred ~bb c (Goto loop_block) (Goto leave_block)
+      explicate_loop ~bb condition (explicate_tail ~bb body) leave_block
   | `Unary (Not, a) -> Return (`Not (explicate_atom a))
   | `Binary (Add, a, b) -> Return (`Add (explicate_atom a, explicate_atom b))
   | `Binary (Sub, a, b) -> Return (`Sub (explicate_atom a, explicate_atom b))
@@ -104,8 +102,8 @@ and explicate_assign ~(bb : basic_blocks ref) (e : rco_expr) (x : string)
 and explicate_pred ~(bb : basic_blocks ref) (pred : rco_expr) (thn : ctail)
     (els : ctail) : ctail =
   match pred with
-  | `Bool b -> if b then thn else els
   | `Var x -> cif ~bb `Eq (`CVar x) (`CInt 1) thn els
+  | `Bool b -> if b then thn else els
   | `Let (x, t, body) ->
       explicate_assign ~bb t x @@ explicate_pred ~bb body thn els
   | `If (c, t, f) ->
@@ -117,10 +115,23 @@ and explicate_pred ~(bb : basic_blocks ref) (pred : rco_expr) (thn : ctail)
       cif ~bb `And (explicate_atom a) (explicate_atom b) thn els
   | `Binary (Or, a, b) ->
       cif ~bb `Or (explicate_atom a) (explicate_atom b) thn els
+  | `While _ ->
+      Reporter.fatalf Compile_error "use loop as condition is disallowed"
   (* TODO: need type checker to ensure this is impossible *)
   | _ ->
       Reporter.fatalf Compile_error "explicate_pred unhandled case: %s"
       @@ show_rco_expr pred
+
+and explicate_loop ~(bb : basic_blocks ref) (pred : rco_expr) (block : ctail)
+    (leave_block : label) : ctail =
+  let loop_block = create_block ~bb block in
+  match pred with
+  | `Var x ->
+      cif ~bb `Eq (`CVar x) (`CInt 1) (Goto loop_block) (Goto leave_block)
+  | `Bool b -> if b then Goto loop_block else Goto leave_block
+  | `While _ ->
+      Reporter.fatalf Compile_error "use loop as condition is disallowed"
+  | _e -> Reporter.fatal TODO ""
 
 and cif ~(bb : basic_blocks ref) (op : cmp_op) (a : catom) (b : catom)
     (thn : ctail) (els : ctail) : ctail =
