@@ -34,7 +34,7 @@ jobs:
         run: opam exec -- dune build
 
       - name: Upload the build artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.os }}-${{ matrix.ocaml-version }}-minic.exe
           path: _build/default/bin/main.exe
