@@ -25,46 +25,41 @@ let print_block_livesets : asm -> (label * RegSet.t list) list -> unit =
          traceln "%s:" label;
          print_livesets (List.assoc label prog) livesets)
 
+(* Liveness is a backward dataflow problem. With loops the control-flow graph has
+   cycles (A -> B -> A), so we cannot analyze a block by recursing into its
+   successors — that diverges. Instead we iterate every block round-robin until no
+   block's live-before set changes anymore (a fixpoint). Live sets only ever grow
+   and the variable universe is finite, so this terminates. *)
 let rec run ~(debug : int) (prog : asm) : (label * RegSet.t list) list =
-  let block_livesets : (label * RegSet.t list) list ref = ref [] in
+  let table : (label, RegSet.t list) Hashtbl.t = Hashtbl.create 16 in
+  (* seed every block with an empty live-in so successors can be looked up *)
+  List.iter (fun (label, _) -> Hashtbl.replace table label [ RegSet.empty ]) prog;
+  (* live-before the block = live-in = head of its current live set list *)
+  let live_in label = List.hd (Hashtbl.find table label) in
+  let changed = ref true in
+  while !changed do
+    changed := false;
+    prog
+    |> List.iter (fun (label, { instrs; successor; _ }) ->
+           let live_after =
+             successor
+             |> List.fold_left
+                  (fun acc s -> RegSet.union acc (live_in s))
+                  RegSet.empty
+           in
+           let live_sets = analyze_instrs instrs [ live_after ] in
+           let old_in = List.hd (Hashtbl.find table label) in
+           if not (RegSet.equal (List.hd live_sets) old_in) then changed := true;
+           Hashtbl.replace table label live_sets)
+  done;
 
-  prog
-  |> List.iter (fun (_, block) ->
-         let _ = analyze_basic_block prog block_livesets block in
-         ());
-
+  let block_livesets =
+    List.map (fun (label, _) -> (label, Hashtbl.find table label)) prog
+  in
   if debug >= 1 then (
     traceln "[pass] liveness analysis";
-    print_block_livesets prog !block_livesets);
-  !block_livesets
-
-(* The real hard part is that, when a loop structure involved, there will have A -> B -> A.
-
-   In this case, we need to iterate process until stable, so we cannot just invoke `analyze_basic_block` recursively, but have to check when in block_livesets we have a cache, the new result changed or not.
-*)
-and compute_live_before (prog : asm)
-    (block_livesets : (label * RegSet.t list) list ref) (successor : label list)
-    : RegSet.t =
-  match successor with
-  (* have no dependencies then live before is empty *)
-  | [] -> RegSet.empty
-  (* have dependencies, so we collect their result *)
-  | ss ->
-      let succ_blocks = ss |> List.map (fun label -> List.assoc label prog) in
-      let live_sets =
-        List.map (analyze_basic_block prog block_livesets) succ_blocks
-      in
-      List.map List.hd live_sets |> List.fold_left RegSet.union RegSet.empty
-
-and analyze_basic_block (prog : asm)
-    (block_livesets : (label * RegSet.t list) list ref)
-    ({ name = label; instrs; successor } : block) : RegSet.t list =
-  let live_before_k_plus_1 =
-    compute_live_before prog block_livesets successor
-  in
-  let live_sets = analyze_instrs instrs [ live_before_k_plus_1 ] in
-  block_livesets := (label, live_sets) :: !block_livesets;
-  live_sets
+    print_block_livesets prog block_livesets);
+  block_livesets
 
 and analyze_instrs : instruction list -> RegSet.t list -> RegSet.t list =
  fun instrs live_sets -> List.fold_right analyze_instr instrs live_sets

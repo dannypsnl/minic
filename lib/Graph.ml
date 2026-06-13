@@ -18,7 +18,25 @@ module Graph = struct
 
   let empty : t = VertexSet.empty
   let vertex reg = VertexSet.singleton { value = reg; adjacency = RegSet.empty }
-  let overlay : t -> t -> t = fun g1 g2 -> VertexSet.union g1 g2
+
+  (* A vertex is keyed only by its [value], so a plain [VertexSet.union] would keep
+     one copy on collision and silently drop the other's adjacency. Merge the
+     adjacency sets instead, so overlaying accumulates edges rather than losing
+     them. *)
+  let overlay : t -> t -> t =
+   fun g1 g2 ->
+    VertexSet.fold
+      (fun v acc ->
+        match VertexSet.find_opt v acc with
+        | Some existing ->
+            VertexSet.add
+              {
+                value = v.value;
+                adjacency = RegSet.union v.adjacency existing.adjacency;
+              }
+              (VertexSet.remove existing acc)
+        | None -> VertexSet.add v acc)
+      g2 g1
 
   let connect : t -> t -> t =
    fun g1 g2 ->

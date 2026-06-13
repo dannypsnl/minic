@@ -22,12 +22,8 @@ and explicate_tail ~(bb : basic_blocks ref) (e : rco_expr) : ctail =
         (explicate_tail ~bb els)
   | `Set (x, e) -> explicate_assign ~bb e x (Return `Void)
   | `Begin (es, e) ->
-      let es = List.map (fun e -> explicate_tail ~bb e) es in
-      let e = explicate_tail ~bb e in
-      List.fold_right (fun stmt e -> Seq (AsStmt stmt, e)) es e
-  | `While (condition, body) ->
-      let leave_block = create_block ~bb (Return `Void) in
-      explicate_loop ~bb condition (explicate_tail ~bb body) leave_block
+      List.fold_right (explicate_effect ~bb) es (explicate_tail ~bb e)
+  | `While _ -> explicate_effect ~bb e (Return `Void)
   | `Unary (Not, a) -> Return (`Not (explicate_atom a))
   | `Binary (Add, a, b) -> Return (`Add (explicate_atom a, explicate_atom b))
   | `Binary (Sub, a, b) -> Return (`Sub (explicate_atom a, explicate_atom b))
@@ -45,11 +41,9 @@ and explicate_assign ~(bb : basic_blocks ref) (e : rco_expr) (x : string)
   | `Bool true -> Seq (Assign (x, `CInt 1), cont)
   | `Bool false -> Seq (Assign (x, `CInt 0), cont)
   | `Int i -> Seq (Assign (x, `CInt i), cont)
-  | `Var x -> Seq (Assign (x, `CVar x), cont)
+  | `Var v -> Seq (Assign (x, `CVar v), cont)
   | `Begin (es, e) ->
-      let es = List.map (fun e -> explicate_tail ~bb e) es in
-      let e = explicate_assign ~bb e x cont in
-      List.fold_right (fun stmt e -> Seq (AsStmt stmt, e)) es e
+      List.fold_right (explicate_effect ~bb) es (explicate_assign ~bb e x cont)
   | `Let (x2, t, body) ->
       let body' = explicate_assign ~bb body x cont in
       explicate_assign ~bb t x2 body'
@@ -115,6 +109,12 @@ and explicate_pred ~(bb : basic_blocks ref) (pred : rco_expr) (thn : ctail)
       cif ~bb `And (explicate_atom a) (explicate_atom b) thn els
   | `Binary (Or, a, b) ->
       cif ~bb `Or (explicate_atom a) (explicate_atom b) thn els
+  | `Binary (EQ, a, b) ->
+      cif ~bb `Eq (explicate_atom a) (explicate_atom b) thn els
+  | `Binary (LT, a, b) ->
+      cif ~bb `Lt (explicate_atom a) (explicate_atom b) thn els
+  | `Binary (LE, a, b) ->
+      cif ~bb `Le (explicate_atom a) (explicate_atom b) thn els
   | `While _ ->
       Reporter.fatalf Compile_error "use loop as condition is disallowed"
   (* TODO: need type checker to ensure this is impossible *)
@@ -122,16 +122,37 @@ and explicate_pred ~(bb : basic_blocks ref) (pred : rco_expr) (thn : ctail)
       Reporter.fatalf Compile_error "explicate_pred unhandled case: %s"
       @@ show_rco_expr pred
 
-and explicate_loop ~(bb : basic_blocks ref) (pred : rco_expr) (block : ctail)
-    (leave_block : label) : ctail =
-  let loop_block = create_block ~bb block in
-  match pred with
-  | `Var x ->
-      cif ~bb `Eq (`CVar x) (`CInt 1) (Goto loop_block) (Goto leave_block)
-  | `Bool b -> if b then Goto loop_block else Goto leave_block
-  | `While _ ->
-      Reporter.fatalf Compile_error "use loop as condition is disallowed"
-  | _e -> Reporter.fatal TODO ""
+(* Evaluate `e` for its side effects, discard its value, then do `cont`. This is
+   the statement position: `Begin` elements, loop bodies, etc. live here. *)
+and explicate_effect ~(bb : basic_blocks ref) (e : rco_expr) (cont : ctail) :
+    ctail =
+  match e with
+  | `Set (x, e) -> explicate_assign ~bb e x cont
+  | `Begin (es, e) ->
+      List.fold_right (explicate_effect ~bb) es (explicate_effect ~bb e cont)
+  | `Let (x, t, body) ->
+      explicate_assign ~bb t x (explicate_effect ~bb body cont)
+  | `If (c, t, f) ->
+      let cont' = Goto (create_block ~bb cont) in
+      explicate_pred ~bb c
+        (explicate_effect ~bb t cont')
+        (explicate_effect ~bb f cont')
+  | `While (condition, body) ->
+      (* Reserve the loop label up front so the body can jump back to the test.
+            loop:  if condition then goto <body> else goto <cont>
+            <body>: ...; goto loop *)
+      let loop_block = Variable.make "loop" in
+      let test =
+        explicate_pred ~bb condition
+          (explicate_effect ~bb body (Goto loop_block))
+          cont
+      in
+      bb := (loop_block, { name = loop_block; body = test }) :: !bb;
+      Goto loop_block
+  | _ ->
+      (* a pure expression in statement position: its value is discarded, so it
+         has no effect and we fall straight through to `cont`. *)
+      cont
 
 and cif ~(bb : basic_blocks ref) (op : cmp_op) (a : catom) (b : catom)
     (thn : ctail) (els : ctail) : ctail =

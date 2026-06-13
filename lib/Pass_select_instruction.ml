@@ -41,6 +41,11 @@ and go : label list ref -> ctail -> instruction list =
       successor := [ thn; els ];
       [ iand (`Var x, Reg.to_src (`Var x), compile_atom e2) ]
       @ [ CBNZ (`Var x, thn); B els ]
+  | If { cmp = (`Eq | `Ge | `Gt | `Le | `Lt) as cmp; a; b; thn; els } ->
+      (* materialize `a cmp b` as 0/1 into a temp, then branch if it is set *)
+      successor := [ thn; els ];
+      let t = `Var (Variable.make "tmp") in
+      compare t a b cmp @ [ CBNZ (t, thn); B els ]
   | If _ ->
       traceln "%s" (show_ctail t);
       failwith "TODO"

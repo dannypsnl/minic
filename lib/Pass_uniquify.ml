@@ -22,9 +22,12 @@ and go : (string * int) list -> surface_expr -> surface_expr =
       let env' = (x, new_cnt) :: env in
       `Let (form_var x new_cnt, go env t, go env' body)
   | `If (c, t, f) -> `If (go env c, go env t, go env f)
-  | `Set (x, e) -> `Set (x, e)
-  | `Seq (a, b) -> `Seq (a, b)
-  | `While (c, b) -> `While (c, b)
+  | `Set (x, e) -> (
+      match List.assoc_opt x env with
+      | Some cnt -> `Set (form_var x cnt, go env e)
+      | None -> raise (UnboundVariable x))
+  | `Seq (a, b) -> `Seq (go env a, go env b)
+  | `While (c, b) -> `While (go env c, go env b)
 
 and form_var : string -> int -> string =
  fun name cnt -> name ^ "." ^ Int.to_string cnt
